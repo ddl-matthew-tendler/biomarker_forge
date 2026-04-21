@@ -8,7 +8,4 @@ pip install -r /mnt/code/requirements.txt --quiet
 export PYTHONPATH=/mnt/code:$PYTHONPATH
 
 # Domino Publishing requires the app to listen on port 8888
-exec uvicorn src.api.main:app \
-  --host 0.0.0.0 \
-  --port 8888 \
-  --workers 1
+exec python /mnt/code/src/dashboard/app.py
