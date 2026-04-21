@@ -1,0 +1,31 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+
+# Data (large files stay in /mnt/data)
+data/synthetic/cohort.csv
+data/synthetic/cohort_clean.csv
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+notebooks/01_eda_executed.ipynb
+
+# Reports (generated artifacts)
+reports/*.png
+reports/*.html
+reports/*.pdf
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store

@@ -1,0 +1,50 @@
+project:
+  name: biomarker_forge
+  version: "0.1.0"
+  random_seed: 42
+
+data:
+  raw_dir: data/synthetic
+  output_dir: /mnt/data/biomarker_forge   # legacy Domino dataset mount (read)
+  synthetic_file: cohort.csv
+  clean_file: cohort_clean.csv
+
+volumes:
+  outputs:
+    id: 70bb152b-7fe3-4261-af44-52843feaa904
+    unique_name: netapp-volume-biomarker-forge-outputs-70bb152b-7fe3-4261-af44-52843feaa904
+    mount_path: /mnt/netapp-volumes/biomarker-forge-outputs
+    # Stores: train.csv, test.csv, scaler.pkl, model artifacts, reports
+  source_data:
+    unique_name: netapp-volume-rwe-omop-raw-20b17274-a790-409b-93ee-ab2b4a2a22a7
+    mount_path: /mnt/data/rwe-omop-raw              # attach via Project Settings when ready
+    # Read-only: OMOP CDM source data (owner: nick_jablonski)
+
+cohort:
+  n_samples: 500
+  n_biomarkers: 50         # total features
+  n_signal_biomarkers: 8   # features with real signal injected
+  test_size: 0.2
+  outcome_column: response  # binary: 1=responder, 0=non-responder
+  id_column: patient_id
+
+preprocessing:
+  missing_threshold: 0.3    # drop feature if >30% missing
+  outlier_std: 4.0          # clip at ±4 SD
+  scaler: standard          # standard | minmax | robust
+
+biomarker_selection:
+  fdr_threshold: 0.05
+  top_n_candidates: 20
+
+model:
+  cv_folds: 5
+  scoring: roc_auc
+  mlflow_experiment: biomarker_forge_v1
+
+api:
+  host: 0.0.0.0
+  port: 8000
+
+reports:
+  output_dir: reports
