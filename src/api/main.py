@@ -16,6 +16,11 @@ def _load_config() -> dict:
     return {}
 
 
+@app.get("/")
+def root():
+    return {"name": "BiomarkerForge", "version": "0.1.0", "docs": "/docs", "health": "/health", "status": "/status"}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
