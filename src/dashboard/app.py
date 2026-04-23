@@ -54,6 +54,27 @@ _log(f"cohort   = {_COHORT_PATH}  (exists: {_COHORT_PATH.exists()})")
 _log(f"clean    = {_CLEAN_PATH}  (exists: {_CLEAN_PATH.exists()})")
 _log(f"outcome  = {_OUTCOME!r}, id_col = {_ID_COL!r}")
 
+# ── Auto-generate data if missing ────────────────────────────────────────────
+if not _COHORT_PATH.exists():
+    _log("Cohort file missing — running data generation pipeline...")
+    try:
+        from src.pipeline.generate_data import main as generate_main
+        generate_main(config_path=str(_CFG_PATH))
+        _log(f"Data generated. cohort exists: {_COHORT_PATH.exists()}")
+    except Exception as exc:
+        _log(f"ERROR generating data: {exc}")
+        _log(traceback.format_exc())
+
+if _COHORT_PATH.exists() and not _CLEAN_PATH.exists():
+    _log("Clean file missing — running preprocessing pipeline...")
+    try:
+        from src.pipeline.preprocess import main as preprocess_main
+        preprocess_main(config_path=str(_CFG_PATH))
+        _log(f"Preprocessing done. clean exists: {_CLEAN_PATH.exists()}")
+    except Exception as exc:
+        _log(f"ERROR preprocessing: {exc}")
+        _log(traceback.format_exc())
+
 try:
     df_raw = pd.read_csv(_COHORT_PATH) if _COHORT_PATH.exists() else pd.DataFrame()
     _log(f"df_raw: shape={df_raw.shape}, cols={list(df_raw.columns[:10])}{'...' if len(df_raw.columns) > 10 else ''}")
