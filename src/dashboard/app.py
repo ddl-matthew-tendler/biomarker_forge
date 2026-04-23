@@ -1,4 +1,5 @@
 import datetime
+import os
 import sys
 import traceback
 from pathlib import Path
@@ -24,6 +25,9 @@ def _log(msg: str):
 _log("App startup begin")
 _log(f"Python {sys.version}")
 _log(f"Dash {dash.__version__}, Pandas {pd.__version__}")
+_log(f"DOMINO_RUN_HOST_PATH = {os.environ.get('DOMINO_RUN_HOST_PATH', '(not set)')}")
+_log(f"DOMINO_PROJECT_NAME  = {os.environ.get('DOMINO_PROJECT_NAME', '(not set)')}")
+_log(f"DOMINO_RUN_ID        = {os.environ.get('DOMINO_RUN_ID', '(not set)')}")
 
 # ── Config & data ────────────────────────────────────────────────────────────
 
@@ -275,11 +279,15 @@ def _pipeline_tab():
     ], className="shadow-sm")
 
 
+_prefix = os.environ.get("DOMINO_RUN_HOST_PATH", "/")
+_log(f"DOMINO_RUN_HOST_PATH = {_prefix!r}")
+
 app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     title="BiomarkerForge",
     suppress_callback_exceptions=True,
+    requests_pathname_prefix=_prefix,
 )
 server = app.server
 

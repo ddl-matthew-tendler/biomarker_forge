@@ -5,7 +5,8 @@
       "Bash(PYTHONPATH=/mnt/code python *)",
       "Bash(PYTHONPATH=/mnt/code pip install dash dash-bootstrap-components --quiet)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8888/)",
-      "Bash(fuser -k 8888/tcp)"
+      "Bash(fuser -k 8888/tcp)",
+      "Bash(env | grep -i domino | sort)"
     ]
   }
 }
