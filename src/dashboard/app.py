@@ -1,3 +1,6 @@
+import datetime
+import sys
+import traceback
 from pathlib import Path
 
 import dash
@@ -6,28 +9,87 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import yaml
-from dash import dash_table, dcc, html
+from dash import Input, Output, State, callback, dcc, html
+
+# ── Debug log collector ──────────────────────────────────────────────────────
+
+_debug_log: list[str] = []
+
+
+def _log(msg: str):
+    ts = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    _debug_log.append(f"[{ts}] {msg}")
+
+
+_log("App startup begin")
+_log(f"Python {sys.version}")
+_log(f"Dash {dash.__version__}, Pandas {pd.__version__}")
 
 # ── Config & data ────────────────────────────────────────────────────────────
 
 _BASE = Path("/mnt/code")
 _CFG_PATH = _BASE / "config.yaml"
 
-with open(_CFG_PATH) as f:
-    CFG = yaml.safe_load(f)
+try:
+    with open(_CFG_PATH) as f:
+        CFG = yaml.safe_load(f)
+    _log(f"Config loaded from {_CFG_PATH}")
+except Exception as exc:
+    CFG = {}
+    _log(f"ERROR loading config: {exc}")
 
-_RAW_DIR = _BASE / CFG["data"]["raw_dir"]
-_COHORT_PATH = _RAW_DIR / CFG["data"]["synthetic_file"]
-_CLEAN_PATH = _RAW_DIR / CFG["data"]["clean_file"]
-_OUTCOME = CFG["cohort"]["outcome_column"]
-_ID_COL = CFG["cohort"]["id_column"]
+_RAW_DIR = _BASE / CFG.get("data", {}).get("raw_dir", "data/synthetic")
+_COHORT_PATH = _RAW_DIR / CFG.get("data", {}).get("synthetic_file", "cohort.csv")
+_CLEAN_PATH = _RAW_DIR / CFG.get("data", {}).get("clean_file", "cohort_clean.csv")
+_OUTCOME = CFG.get("cohort", {}).get("outcome_column", "response")
+_ID_COL = CFG.get("cohort", {}).get("id_column", "patient_id")
 _BM_PREFIX = "BM_"
 
-df_raw = pd.read_csv(_COHORT_PATH) if _COHORT_PATH.exists() else pd.DataFrame()
-df_clean = pd.read_csv(_CLEAN_PATH) if _CLEAN_PATH.exists() else pd.DataFrame()
+_log(f"raw_dir  = {_RAW_DIR}  (exists: {_RAW_DIR.exists()})")
+_log(f"cohort   = {_COHORT_PATH}  (exists: {_COHORT_PATH.exists()})")
+_log(f"clean    = {_CLEAN_PATH}  (exists: {_CLEAN_PATH.exists()})")
+_log(f"outcome  = {_OUTCOME!r}, id_col = {_ID_COL!r}")
+
+try:
+    df_raw = pd.read_csv(_COHORT_PATH) if _COHORT_PATH.exists() else pd.DataFrame()
+    _log(f"df_raw: shape={df_raw.shape}, cols={list(df_raw.columns[:10])}{'...' if len(df_raw.columns) > 10 else ''}")
+    if not df_raw.empty:
+        _log(f"df_raw dtypes: {dict(df_raw.dtypes.value_counts())}")
+        if _OUTCOME in df_raw.columns:
+            _log(f"Outcome '{_OUTCOME}' value_counts: {dict(df_raw[_OUTCOME].value_counts())}")
+        else:
+            _log(f"WARNING: outcome column '{_OUTCOME}' NOT found in df_raw columns")
+except Exception as exc:
+    df_raw = pd.DataFrame()
+    _log(f"ERROR loading df_raw: {exc}")
+    _log(traceback.format_exc())
+
+try:
+    df_clean = pd.read_csv(_CLEAN_PATH) if _CLEAN_PATH.exists() else pd.DataFrame()
+    _log(f"df_clean: shape={df_clean.shape}")
+except Exception as exc:
+    df_clean = pd.DataFrame()
+    _log(f"ERROR loading df_clean: {exc}")
 
 bm_cols = [c for c in df_raw.columns if c.startswith(_BM_PREFIX)] if not df_raw.empty else []
 demo_cols = ["age", "sex", "bmi"]
+
+_log(f"Biomarker columns found: {len(bm_cols)}")
+if bm_cols:
+    miss_pct = df_raw[bm_cols].isna().mean().mean() * 100
+    _log(f"Overall biomarker missing%: {miss_pct:.2f}%")
+for col in demo_cols:
+    if not df_raw.empty and col in df_raw.columns:
+        _log(f"  {col}: min={df_raw[col].min()}, max={df_raw[col].max()}, null={df_raw[col].isna().sum()}")
+    elif not df_raw.empty:
+        _log(f"  WARNING: demo column '{col}' not in df_raw")
+
+# config dump
+for section in ("cohort", "preprocessing", "biomarker_selection", "model"):
+    if section in CFG:
+        _log(f"Config [{section}]: {CFG[section]}")
+
+_log("App startup complete")
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -244,7 +306,63 @@ app.layout = dbc.Container(fluid=True, children=[
         html.Small("BiomarkerForge · Non-GxP preclinical discovery · Domino Data Lab", className="text-muted"),
         className="mt-5 mb-3 text-center",
     ),
-], style={"backgroundColor": "#f8f9fa", "minHeight": "100vh"})
+
+    # ── Debug log panel ──────────────────────────────────────────────────
+    html.Div([
+        html.Button(
+            "Debug Log",
+            id="debug-toggle-btn",
+            n_clicks=0,
+            style={
+                "width": "100%",
+                "padding": "6px 16px",
+                "border": "none",
+                "borderTop": "1px solid #dee2e6",
+                "backgroundColor": "#343a40",
+                "color": "#adb5bd",
+                "cursor": "pointer",
+                "fontSize": "0.8rem",
+                "fontFamily": "monospace",
+                "textAlign": "left",
+            },
+        ),
+        html.Div(
+            html.Pre(
+                id="debug-log-content",
+                style={
+                    "margin": 0,
+                    "padding": "12px 16px",
+                    "fontSize": "0.75rem",
+                    "lineHeight": "1.4",
+                    "color": "#e0e0e0",
+                    "backgroundColor": "#1e1e1e",
+                    "whiteSpace": "pre-wrap",
+                    "wordBreak": "break-all",
+                    "maxHeight": "300px",
+                    "overflowY": "auto",
+                    "fontFamily": "'Courier New', Courier, monospace",
+                },
+            ),
+            id="debug-panel",
+            style={"display": "none"},
+        ),
+    ], style={"position": "fixed", "bottom": 0, "left": 0, "right": 0, "zIndex": 9999}),
+
+], style={"backgroundColor": "#f8f9fa", "minHeight": "100vh", "paddingBottom": "40px"})
+
+
+@callback(
+    Output("debug-panel", "style"),
+    Output("debug-toggle-btn", "children"),
+    Output("debug-log-content", "children"),
+    Input("debug-toggle-btn", "n_clicks"),
+)
+def toggle_debug_panel(n_clicks):
+    is_open = (n_clicks or 0) % 2 == 1
+    panel_style = {"display": "block"} if is_open else {"display": "none"}
+    label = "Debug Log [click to collapse]" if is_open else "Debug Log [click to expand]"
+    log_text = "\n".join(_debug_log) if _debug_log else "(no log entries)"
+    return panel_style, label, log_text
 
 
 if __name__ == "__main__":
