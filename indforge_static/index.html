@@ -5,13 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>INDForge</title>
 
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/antd@5.11.2/dist/antd.min.js"></script>
+  <!-- Load order matters: dayjs must be defined before antd UMD evaluates,
+       otherwise antd throws during init and never sets window.antd. -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"
+          onerror="window.__indforgePush && window.__indforgePush('ERROR','react CDN failed')"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+          onerror="window.__indforgePush && window.__indforgePush('ERROR','react-dom CDN failed')"></script>
+  <script src="https://unpkg.com/dayjs@1.11.10/dayjs.min.js"
+          onerror="window.__indforgePush && window.__indforgePush('ERROR','dayjs CDN failed')"></script>
+  <script src="https://unpkg.com/antd@5.11.2/dist/antd.min.js"
+          onerror="window.__indforgePush && window.__indforgePush('ERROR','antd CDN failed')"></script>
   <link href="https://unpkg.com/antd@5.11.2/dist/reset.css" rel="stylesheet" />
-  <script src="https://unpkg.com/dayjs@1.11.10/dayjs.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/highcharts.js"
+          onerror="window.__indforgePush && window.__indforgePush('ERROR','highcharts CDN failed')"></script>
 
   <link rel="stylesheet" href="static/styles.css" />
   <link rel="icon" type="image/svg+xml" href="static/icon.svg" />

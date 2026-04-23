@@ -1,5 +1,17 @@
 // INDForge — preclinical IND-enabling biomarker app.
 
+if (!window.antd) {
+  var msg = 'window.antd is undefined — AntD UMD failed to initialize. ' +
+    'Check dayjs load order (must load before antd) and network access to unpkg.com.';
+  try { window.__indforgePush && window.__indforgePush('ERROR', msg); } catch (e) {}
+  var root = document.getElementById('root');
+  if (root) {
+    root.innerHTML = '<div style="padding:40px;font-family:Inter,Arial,sans-serif;color:#C20A29">' +
+      '<h2>INDForge failed to initialize</h2><p>' + msg + '</p>' +
+      '<p>Open the debug log at the bottom of the page for details.</p></div>';
+  }
+  throw new Error(msg);
+}
 var antdLib = window.antd;
 var ConfigProvider = antdLib.ConfigProvider;
 var Button = antdLib.Button;
