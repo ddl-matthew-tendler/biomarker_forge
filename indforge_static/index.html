@@ -13,11 +13,76 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://code.highcharts.com/highcharts.js"></script>
 
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="static/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="static/icon.svg" />
 </head>
 <body>
   <div id="root"></div>
-  <script src="/static/mock_data.js"></script>
-  <script src="/static/app.js"></script>
+
+  <!-- Boot-time debug panel. Captures errors BEFORE React mounts so
+       "nothing loads" cases are still diagnosable. React's debug accordion
+       hides this once it takes over. -->
+  <div id="boot-debug">
+    <div id="boot-debug-header">
+      <strong>INDForge boot log</strong>
+      <button id="boot-debug-copy" type="button">Copy</button>
+      <button id="boot-debug-close" type="button">Hide</button>
+    </div>
+    <pre id="boot-log"></pre>
+  </div>
+
+  <script>
+    (function () {
+      var logEl = document.getElementById('boot-log');
+      window.__indforgeLog = [];
+      function stamp() { var d = new Date(); return d.toISOString().split('T')[1].slice(0, 12); }
+      function push(level, msg) {
+        var line = '[' + stamp() + '] ' + level + ' ' + msg;
+        window.__indforgeLog.push({ level: level, msg: msg, time: Date.now() });
+        if (logEl) logEl.textContent += line + '\n';
+        // Also echo to console for DevTools users
+        try { (console[level.toLowerCase()] || console.log)('[INDForge]', msg); } catch (e) {}
+      }
+      window.__indforgePush = push;
+
+      push('INFO', 'boot script running; UA=' + navigator.userAgent.slice(0, 80));
+      push('INFO', 'location=' + window.location.href);
+
+      window.addEventListener('error', function (e) {
+        push('ERROR', (e.message || 'error') + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        push('ERROR', 'unhandledrejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+      });
+
+      // Probe vendor libs after they should be loaded
+      window.addEventListener('load', function () {
+        push('INFO', 'window load event fired');
+        push('INFO', 'React=' + (typeof React !== 'undefined' ? React.version : 'MISSING'));
+        push('INFO', 'ReactDOM=' + (typeof ReactDOM !== 'undefined' ? 'ok' : 'MISSING'));
+        push('INFO', 'antd=' + (typeof antd !== 'undefined' ? 'ok' : 'MISSING'));
+        push('INFO', 'Highcharts=' + (typeof Highcharts !== 'undefined' ? 'ok' : 'MISSING'));
+        push('INFO', 'MOCK_CANDIDATES=' + (typeof MOCK_CANDIDATES !== 'undefined' ? MOCK_CANDIDATES.length + ' rows' : 'MISSING'));
+        setTimeout(function () {
+          var root = document.getElementById('root');
+          push('INFO', 'root children after 400ms = ' + (root ? root.childElementCount : 'no root'));
+        }, 400);
+      });
+
+      document.getElementById('boot-debug-close').addEventListener('click', function () {
+        document.getElementById('boot-debug').style.display = 'none';
+      });
+      document.getElementById('boot-debug-copy').addEventListener('click', function () {
+        var txt = logEl.textContent;
+        navigator.clipboard.writeText(txt).then(function () {
+          document.getElementById('boot-debug-copy').textContent = 'Copied';
+          setTimeout(function () { document.getElementById('boot-debug-copy').textContent = 'Copy'; }, 1500);
+        });
+      });
+    })();
+  </script>
+
+  <script src="static/mock_data.js" onerror="window.__indforgePush('ERROR','mock_data.js failed to load')"></script>
+  <script src="static/app.js" onerror="window.__indforgePush('ERROR','app.js failed to load')"></script>
 </body>
 </html>

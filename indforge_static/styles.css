@@ -77,6 +77,27 @@ html, body { margin: 0; padding: 0; font-family: 'Inter', 'Lato', 'Helvetica Neu
 .kv-grid .k { color: #7F8385; }
 .kv-grid .v { color: #3F4547; font-weight: 500; }
 
+/* Boot-time debug panel (visible until user hides it) */
+#boot-debug { position: fixed; left: 12px; right: 12px; bottom: 12px; max-height: 240px; overflow: auto;
+  background: #1A1A24; color: #E0E0E8; border: 1px solid #3A3A4A; border-radius: 8px; z-index: 9999;
+  font-family: 'SFMono-Regular', Consolas, Menlo, monospace; font-size: 11px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+#boot-debug-header { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #3A3A4A;
+  background: #23232F; position: sticky; top: 0; }
+#boot-debug-header strong { flex: 1; color: #FFFFFF; font-size: 12px; }
+#boot-debug-header button { background: #3A3A4A; color: #FFF; border: none; border-radius: 4px; padding: 3px 10px; font-size: 11px; cursor: pointer; }
+#boot-debug-header button:hover { background: #4A4A5A; }
+#boot-log { margin: 0; padding: 8px 12px; white-space: pre-wrap; word-break: break-word; }
+
+/* Debug accordion inside the React app */
+.debug-accordion { margin-top: 24px; margin-bottom: 40px; }
+.debug-accordion .ant-collapse { background: #FFFFFF; border: 1px solid #DBE4E8; border-radius: 8px; }
+.debug-accordion pre { margin: 0; padding: 12px 14px; max-height: 320px; overflow: auto;
+  font-family: 'SFMono-Regular', Consolas, Menlo, monospace; font-size: 12px; color: #3F4547;
+  background: #FAFAFA; border-radius: 4px; white-space: pre-wrap; word-break: break-word; }
+.debug-log-row.err { color: #C20A29; }
+.debug-log-row.warn { color: #B07A00; }
+.debug-log-row.info { color: #3F4547; }
+
 /* Dose card */
 .dose-card { background: linear-gradient(180deg, #F5F3FF 0%, #FFFFFF 100%); border: 1px solid #C9C5F2; border-radius: 8px; padding: 18px 20px; }
 .dose-card-label { font-size: 12px; text-transform: uppercase; color: #1820A0; letter-spacing: 0.05em; font-weight: 600; }

@@ -11,6 +11,16 @@ var Drawer = antdLib.Drawer;
 var Tabs = antdLib.Tabs;
 var Alert = antdLib.Alert;
 var Space = antdLib.Space;
+var Collapse = antdLib.Collapse;
+
+// Unified debug logger — proxies to the boot log so everything lives in one store.
+function dlog(level, msg) {
+  try {
+    if (typeof window.__indforgePush === 'function') { window.__indforgePush(level, msg); return; }
+  } catch (e) {}
+  console.log('[INDForge]', level, msg);
+}
+dlog('INFO', 'app.js evaluating');
 
 var h = React.createElement;
 var Fragment = React.Fragment;
@@ -73,10 +83,74 @@ function ScoreBar(props) {
 }
 
 function apiGet(path) {
+  dlog('INFO', 'GET ' + path);
   return fetch(path).then(function(r) {
+    dlog('INFO', 'GET ' + path + ' → ' + r.status);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
+  }).catch(function(err) {
+    dlog('ERROR', 'GET ' + path + ' failed: ' + (err && err.message ? err.message : err));
+    throw err;
   });
+}
+
+// Debug accordion — reads window.__indforgeLog and re-renders on an interval
+// so new events show up without manual refresh. Open by default when there are
+// ERRORs, collapsed otherwise.
+function DebugAccordion() {
+  var _t = useState(0);
+  var tick = _t[0];
+  var setTick = _t[1];
+
+  useEffect(function() {
+    var id = setInterval(function() { setTick(function(n) { return n + 1; }); }, 1000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  var log = (window.__indforgeLog || []).slice();
+  var hasError = log.some(function(e) { return e.level === 'ERROR'; });
+  var errCount = log.filter(function(e) { return e.level === 'ERROR'; }).length;
+
+  function copyAll() {
+    var text = log.map(function(e) {
+      var d = new Date(e.time); return '[' + d.toISOString().split('T')[1].slice(0, 12) + '] ' + e.level + ' ' + e.msg;
+    }).join('\n');
+    try { navigator.clipboard.writeText(text); } catch (e) {}
+  }
+
+  function clearAll() {
+    window.__indforgeLog = [];
+    setTick(tick + 1);
+  }
+
+  var body = h('div', null,
+    h(Space, { style: { marginBottom: 8 } },
+      h(Button, { size: 'small', onClick: copyAll }, 'Copy log'),
+      h(Button, { size: 'small', onClick: clearAll }, 'Clear'),
+      h('span', { style: { fontSize: 12, color: '#7F8385' } }, log.length + ' events · ' + errCount + ' errors')
+    ),
+    h('pre', null,
+      log.map(function(e, i) {
+        var d = new Date(e.time);
+        var cls = 'debug-log-row ' + (e.level === 'ERROR' ? 'err' : e.level === 'WARN' ? 'warn' : 'info');
+        return h('div', { key: i, className: cls },
+          '[' + d.toISOString().split('T')[1].slice(0, 12) + '] ' + e.level + ' ' + e.msg);
+      })
+    )
+  );
+
+  return h('div', { className: 'debug-accordion' },
+    h(Collapse, {
+      defaultActiveKey: hasError ? ['debug'] : [],
+      items: [
+        { key: 'debug',
+          label: hasError
+            ? ('Debug log · ' + errCount + ' error' + (errCount === 1 ? '' : 's'))
+            : ('Debug log · ' + log.length + ' events'),
+          children: body }
+      ]
+    })
+  );
 }
 
 // ---------- Page 1: Candidates ----------
@@ -456,13 +530,24 @@ function App() {
 
   // On mount: probe live data; fall back to dummy silently.
   useEffect(function() {
-    apiGet('/api/candidates').then(function(data) {
+    dlog('INFO', 'App mounted');
+    // Collapse the fixed boot-debug overlay since the React accordion now owns it.
+    var boot = document.getElementById('boot-debug');
+    if (boot) boot.style.display = 'none';
+
+    apiGet('api/context').then(function(ctx) {
+      dlog('INFO', 'context: ' + JSON.stringify(ctx));
+    }).catch(function() {});
+
+    apiGet('api/candidates').then(function(data) {
       setConnected(true);
       setUseDummy(false);
       if (data && data.length) setCandidates(data);
+      dlog('INFO', 'live candidates loaded: ' + (data && data.length ? data.length : 0));
     }).catch(function() {
       setConnected(false);
       setUseDummy(true);
+      dlog('WARN', 'live /api/candidates unavailable — showing dummy data');
     });
   }, []);
 
@@ -471,7 +556,7 @@ function App() {
     if (v) {
       setCandidates(MOCK_CANDIDATES);
     } else {
-      apiGet('/api/candidates').then(function(data) {
+      apiGet('api/candidates').then(function(data) {
         if (data && data.length) setCandidates(data);
       }).catch(function() { setUseDummy(true); });
     }
@@ -510,11 +595,13 @@ function App() {
         h(Tabs, {
           className: 'section-tabs',
           activeKey: activeTab,
-          onChange: setActiveTab,
+          onChange: function(k) { dlog('INFO', 'tab: ' + k); setActiveTab(k); },
           items: tabs,
         }),
 
-        body
+        body,
+
+        h(DebugAccordion)
       )
     )
   );
