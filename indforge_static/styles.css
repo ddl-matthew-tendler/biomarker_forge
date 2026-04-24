@@ -98,6 +98,25 @@ html, body { margin: 0; padding: 0; font-family: 'Inter', 'Lato', 'Helvetica Neu
 .debug-log-row.warn { color: #B07A00; }
 .debug-log-row.info { color: #3F4547; }
 
+/* Cluster picker */
+.cluster-list { display: flex; flex-direction: column; gap: 10px; }
+.cluster-card { border: 1px solid #DBE4E8; border-radius: 8px; padding: 12px 14px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+.cluster-card:hover { border-color: #C9C5F2; background: #FBFAFF; }
+.cluster-card.selected { border-color: #543FDE; background: #F5F3FF; box-shadow: 0 0 0 1px #543FDE inset; }
+.cluster-card-top { display: flex; align-items: center; gap: 10px; }
+.cluster-card-title { display: flex; align-items: center; gap: 8px; flex: 1; }
+.cluster-name { font-weight: 600; color: #3F4547; font-size: 14px; }
+.cluster-recommended { background: #E4FBEF; color: #28A464; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 3px; letter-spacing: 0.04em; text-transform: uppercase; }
+.cluster-card-body { margin-top: 10px; padding-left: 28px; display: grid; gap: 4px; font-size: 12px; }
+.cluster-card-row { display: grid; grid-template-columns: 90px 1fr; gap: 8px; }
+.ccl-k { color: #7F8385; font-weight: 500; }
+.ccl-v { color: #3F4547; }
+.cluster-why { margin-top: 8px; font-size: 12px; color: #65657B; font-style: italic; }
+.cluster-param-label { font-size: 11px; color: #7F8385; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 4px; }
+.cluster-estimate { font-size: 13px; color: #3F4547; margin-left: auto; }
+
+.compute-hint { margin-top: 10px; font-size: 12px; color: #65657B; padding: 8px 12px; background: #F8F7FF; border-left: 3px solid #543FDE; border-radius: 0 4px 4px 0; }
+
 /* Dose card */
 .dose-card { background: linear-gradient(180deg, #F5F3FF 0%, #FFFFFF 100%); border: 1px solid #C9C5F2; border-radius: 8px; padding: 18px 20px; }
 .dose-card-label { font-size: 12px; text-transform: uppercase; color: #1820A0; letter-spacing: 0.05em; font-weight: 600; }

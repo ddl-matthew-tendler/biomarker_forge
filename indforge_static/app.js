@@ -13,6 +13,11 @@ if (!window.antd) {
   throw new Error(msg);
 }
 var antdLib = window.antd;
+var Modal = antdLib.Modal;
+var Radio = antdLib.Radio;
+var Form = antdLib.Form;
+var InputNumber = antdLib.InputNumber;
+var Badge = antdLib.Badge;
 var ConfigProvider = antdLib.ConfigProvider;
 var Button = antdLib.Button;
 var Table = antdLib.Table;
@@ -315,12 +320,18 @@ function SafetyPage(props) {
 
   useEffect(function() {
     if (!chartRef.current) return;
+    if (!Highcharts.seriesTypes || !Highcharts.seriesTypes.heatmap) {
+      dlog('ERROR', 'Highcharts heatmap module not loaded — Safety & Tox chart skipped');
+      chartRef.current.innerHTML = '<div style="padding:40px;text-align:center;color:#C20A29">Heatmap module failed to load. Chart unavailable; table below still works.</div>';
+      return;
+    }
     var series = [];
     for (var i = 0; i < overlap.candidates.length; i++) {
       for (var j = 0; j < overlap.organs.length; j++) {
         series.push([j, i, overlap.matrix[i][j]]);
       }
     }
+    try {
     Highcharts.chart(chartRef.current, {
       chart: { type: 'heatmap', height: 340 },
       title: { text: null },
@@ -342,6 +353,10 @@ function SafetyPage(props) {
       }],
       credits: { enabled: false }
     });
+    } catch (e) {
+      dlog('ERROR', 'Heatmap render failed: ' + (e && e.message));
+      chartRef.current.innerHTML = '<div style="padding:40px;text-align:center;color:#C20A29">Chart render failed: ' + (e && e.message) + '</div>';
+    }
   }, [overlap]);
 
   var flaggedCount = 0;
@@ -395,10 +410,14 @@ function SafetyPage(props) {
 function PKPDPage(props) {
   var pk = props.pkpd;
   var chartRef = useRef(null);
+  var _cp = useState(false);
+  var pickerOpen = _cp[0];
+  var setPickerOpen = _cp[1];
 
   useEffect(function() {
     if (!chartRef.current) return;
     var data = pk.points.map(function(p) { return [p.auc, p.response]; });
+    try {
     Highcharts.chart(chartRef.current, {
       chart: { height: 340 },
       title: { text: null },
@@ -419,6 +438,10 @@ function PKPDPage(props) {
       ],
       credits: { enabled: false }
     });
+    } catch (e) {
+      dlog('ERROR', 'PK/PD render failed: ' + (e && e.message));
+      chartRef.current.innerHTML = '<div style="padding:40px;text-align:center;color:#C20A29">Chart render failed: ' + (e && e.message) + '</div>';
+    }
   }, [pk]);
 
   return h('div', null,
@@ -453,12 +476,20 @@ function PKPDPage(props) {
           h('div', { style: { marginTop: 16 } },
             h(Space, null,
               h(Button, { type: 'primary' }, 'Export dose justification'),
-              h(Button, null, 'Run sensitivity analysis')
-            )
+              h(Button, { icon: '⚡', onClick: function() { setPickerOpen(true); } },
+                'Run bridging & sensitivity analysis')
+            ),
+            h('div', { className: 'compute-hint' },
+              'Parallel species-bridging + PK/PD bootstrap. Targets on-prem SLURM by default — animal omics stays behind the firewall.')
           )
         )
       )
-    )
+    ),
+    h(ClusterPicker, {
+      open: pickerOpen,
+      onClose: function() { setPickerOpen(false); },
+      workflowLabel: 'Run bridging & sensitivity analysis'
+    })
   );
 }
 
@@ -506,6 +537,203 @@ function IndPackagePage(props) {
       )
     )
   );
+}
+
+// ---------- Compute Cluster Picker (on-prem SLURM showcase) ----------
+//
+// This is the workflow that highlights Domino's new on-prem SLURM capability.
+// The science: species-bridging + bootstrap PK/PD sensitivity sweep — a genuinely
+// parallel HPC workload that benefits from SLURM array jobs. The business case
+// for on-prem: animal omics + GLP tox data is often IP/IT-restricted to stay
+// behind the firewall, so being able to target an on-prem cluster from inside
+// Domino (without punching data out to a cloud cluster) is the differentiator.
+//
+// Clusters listed reflect a realistic pharma setup: on-prem SLURM as default,
+// with cloud EKS/GKE as fallbacks.
+
+var COMPUTE_CLUSTERS = [
+  { id: 'slurm-onprem',    name: 'Cambridge HPC (On-Prem SLURM)',  type: 'slurm',   location: 'On-Prem · Cambridge',
+    recommended: true,
+    badge: 'On-prem · SLURM',
+    partitions: ['cpu-long', 'cpu-short', 'gpu-a100'],
+    nodes_available: 142, nodes_total: 256,
+    cost_note: 'No egress · already paid-for capacity',
+    compliance: ['Animal-omics data residency', 'Internal IT approved', 'GLP audit chain preserved'],
+    why_this: 'Preclinical omics is restricted to on-prem storage. Run the sweep where the data already lives.',
+  },
+  { id: 'slurm-nj',    name: 'NJ Research HPC (On-Prem SLURM)', type: 'slurm',   location: 'On-Prem · New Jersey',
+    badge: 'On-prem · SLURM',
+    partitions: ['cpu-xlarge', 'gpu-h100'],
+    nodes_available: 38, nodes_total: 96,
+    cost_note: 'No egress',
+    compliance: ['Animal-omics data residency', 'Internal IT approved'],
+    why_this: 'Secondary on-prem option if Cambridge queue is saturated.',
+  },
+  { id: 'ray-domino',  name: 'Domino-managed Ray cluster', type: 'ray',     location: 'Cloud · us-east-1',
+    partitions: ['default'],
+    nodes_available: 16, nodes_total: 32,
+    cost_note: '$0.42/node-hr (on-demand)',
+    compliance: ['Public omics only — data-transfer review required for preclinical'],
+    why_this: 'Use only if on-prem is offline; requires data-transfer approval for animal omics.',
+  },
+  { id: 'eks-aws',     name: 'AWS EKS (us-east-1)',        type: 'k8s',     location: 'Cloud · AWS',
+    partitions: ['spot-m5', 'gpu-g5'],
+    nodes_available: null, nodes_total: null,
+    cost_note: '$0.38/node-hr + egress',
+    compliance: ['Data-transfer review required'],
+    why_this: 'Burst capacity; incurs egress.',
+  },
+];
+
+function ClusterBadge(props) {
+  var c = props.cluster;
+  var color = c.type === 'slurm' ? '#543FDE' : c.type === 'ray' ? '#0070CC' : '#65657B';
+  return h('span', { style: { display: 'inline-block', background: color, color: '#FFF', fontSize: 10, fontWeight: 700,
+    padding: '2px 7px', borderRadius: 3, letterSpacing: '0.04em', textTransform: 'uppercase' } }, c.badge || c.type);
+}
+
+function ClusterPicker(props) {
+  var open = props.open;
+  var onClose = props.onClose;
+  var workflowLabel = props.workflowLabel || 'Job';
+
+  var _c = useState('slurm-onprem');
+  var clusterId = _c[0];
+  var setClusterId = _c[1];
+
+  var _n = useState(64);
+  var bootstraps = _n[0];
+  var setBootstraps = _n[1];
+
+  var _s = useState('idle'); // idle | submitting | submitted
+  var submitState = _s[0];
+  var setSubmitState = _s[1];
+
+  var _j = useState(null);
+  var job = _j[0];
+  var setJob = _j[1];
+
+  var selected = COMPUTE_CLUSTERS.find(function(c) { return c.id === clusterId; }) || COMPUTE_CLUSTERS[0];
+
+  function submit() {
+    dlog('INFO', 'Submitting ' + workflowLabel + ' to ' + selected.name);
+    setSubmitState('submitting');
+    setTimeout(function() {
+      var id = 'JOB-' + Math.floor(100000 + Math.random() * 900000);
+      var partition = selected.partitions[0];
+      var queued = { id: id, cluster: selected, workflow: workflowLabel, bootstraps: bootstraps,
+        partition: partition, submitted_at: new Date().toISOString() };
+      setJob(queued);
+      setSubmitState('submitted');
+      dlog('INFO', 'Job ' + id + ' queued on ' + selected.name + ' / ' + partition);
+    }, 600);
+  }
+
+  function close() {
+    setSubmitState('idle');
+    setJob(null);
+    onClose();
+  }
+
+  var body;
+  if (submitState === 'submitted' && job) {
+    body = h('div', null,
+      h(Alert, { type: 'success', showIcon: true,
+        message: 'Job ' + job.id + ' submitted',
+        description: h('div', null,
+          h('div', null, workflowLabel + ' queued on ', h('strong', null, job.cluster.name)),
+          h('div', { style: { marginTop: 4, fontSize: 12, color: '#65657B' } },
+            'Partition: ', h('code', null, job.partition), ' · ',
+            'Bootstraps: ', job.bootstraps, ' · ',
+            'Submitted: ', job.submitted_at.split('T')[1].slice(0,8), ' UTC')
+        )
+      }),
+      h('div', { style: { marginTop: 16, padding: 14, background: '#F8F7FF', borderRadius: 6, border: '1px solid #E4E0FF' } },
+        h('div', { style: { fontSize: 12, color: '#1820A0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Why this matters'),
+        h('p', { style: { margin: '6px 0 0', fontSize: 13, color: '#3F4547' } },
+          'Preclinical omics + GLP tox data stays on-prem. The sensitivity sweep runs where the data already lives — no egress, no data-transfer review, and the GLP audit chain is preserved end-to-end. ',
+          'This is the workflow enabled by Domino\u2019s new on-prem SLURM integration.'))
+    );
+  } else {
+    body = h('div', null,
+      h(Alert, { type: 'info', showIcon: true, style: { marginBottom: 16 },
+        message: 'Choose where to run this workload',
+        description: 'Your animal-omics and GLP tox data is restricted to on-prem storage. ' +
+          'On-prem SLURM is recommended — no egress, no data-transfer review.'
+      }),
+
+      h('div', { className: 'cluster-list' },
+        COMPUTE_CLUSTERS.map(function(c) {
+          var sel = c.id === clusterId;
+          return h('div', {
+            key: c.id,
+            className: 'cluster-card' + (sel ? ' selected' : ''),
+            onClick: function() { setClusterId(c.id); }
+          },
+            h('div', { className: 'cluster-card-top' },
+              h(Radio, { checked: sel, onChange: function() { setClusterId(c.id); } }),
+              h('div', { className: 'cluster-card-title' },
+                h('span', { className: 'cluster-name' }, c.name),
+                h(ClusterBadge, { cluster: c }),
+                c.recommended ? h('span', { className: 'cluster-recommended' }, 'Recommended') : null
+              )
+            ),
+            h('div', { className: 'cluster-card-body' },
+              h('div', { className: 'cluster-card-row' },
+                h('span', { className: 'ccl-k' }, 'Location'),
+                h('span', { className: 'ccl-v' }, c.location)),
+              h('div', { className: 'cluster-card-row' },
+                h('span', { className: 'ccl-k' }, 'Capacity'),
+                h('span', { className: 'ccl-v' },
+                  c.nodes_available != null
+                    ? (c.nodes_available + ' / ' + c.nodes_total + ' nodes free')
+                    : 'autoscale')),
+              h('div', { className: 'cluster-card-row' },
+                h('span', { className: 'ccl-k' }, 'Partitions'),
+                h('span', { className: 'ccl-v' },
+                  c.partitions.map(function(p, i) {
+                    return h(Tag, { key: i, style: { marginRight: 4 } }, p);
+                  }))),
+              h('div', { className: 'cluster-card-row' },
+                h('span', { className: 'ccl-k' }, 'Cost'),
+                h('span', { className: 'ccl-v' }, c.cost_note)),
+              h('div', { className: 'cluster-card-row' },
+                h('span', { className: 'ccl-k' }, 'Compliance'),
+                h('span', { className: 'ccl-v' },
+                  c.compliance.map(function(x, i) {
+                    return h('span', { key: i, className: 'status-flag ' + (c.type === 'slurm' ? 'success' : 'warning'), style: { marginRight: 4 } }, x);
+                  }))),
+              h('div', { className: 'cluster-why' }, c.why_this)
+            )
+          );
+        })
+      ),
+
+      h('div', { style: { marginTop: 18, display: 'flex', gap: 18, alignItems: 'center' } },
+        h('div', null,
+          h('div', { className: 'cluster-param-label' }, 'Bootstraps (sensitivity runs)'),
+          h(InputNumber, { min: 16, max: 1024, step: 16, value: bootstraps, onChange: setBootstraps })
+        ),
+        h('div', { className: 'cluster-estimate' },
+          'Est. wall-clock on ', h('strong', null, selected.name.split(' (')[0]), ': ',
+          h('strong', null, Math.max(3, Math.round(bootstraps * (selected.type === 'slurm' ? 0.08 : 0.15))) + ' min'))
+      )
+    );
+  }
+
+  return h(Modal, {
+    title: workflowLabel,
+    open: open,
+    onCancel: close,
+    width: 760,
+    footer: submitState === 'submitted' ? [
+      h(Button, { key: 'close', type: 'primary', onClick: close }, 'Close')
+    ] : [
+      h(Button, { key: 'cancel', onClick: close }, 'Cancel'),
+      h(Button, { key: 'submit', type: 'primary', loading: submitState === 'submitting', onClick: submit },
+        'Submit to ' + (selected.type === 'slurm' ? 'SLURM' : selected.type.toUpperCase()))
+    ],
+  }, body);
 }
 
 // ---------- Root App ----------
