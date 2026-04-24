@@ -102,7 +102,7 @@ function ScoreBar(props) {
 function apiGet(path) {
   dlog('INFO', 'GET ' + path);
   return fetch(path).then(function(r) {
-    dlog('INFO', 'GET ' + path + ' → ' + r.status);
+    dlog('INFO', 'GET ' + path + ' status=' + r.status);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }).catch(function(err) {
@@ -476,7 +476,7 @@ function PKPDPage(props) {
           h('div', { style: { marginTop: 16 } },
             h(Space, null,
               h(Button, { type: 'primary' }, 'Export dose justification'),
-              h(Button, { icon: '⚡', onClick: function() { setPickerOpen(true); } },
+              h(Button, { onClick: function() { setPickerOpen(true); } },
                 'Run bridging & sensitivity analysis')
             ),
             h('div', { className: 'compute-hint' },
@@ -522,9 +522,9 @@ function IndPackagePage(props) {
       h('div', { className: 'panel-body' },
         h('ul', { className: 'checklist' },
           pkg.sections.map(function(s) {
-            var icon = s.status === 'done' ? h('span', { className: 'checklist-icon done' }, '✓')
-              : s.status === 'warn' ? h('span', { className: 'checklist-icon warn' }, '⚠')
-              : h('span', { className: 'checklist-icon pending' }, '○');
+            var icon = s.status === 'done' ? h('span', { className: 'checklist-icon done' })
+              : s.status === 'warn' ? h('span', { className: 'checklist-icon warn' })
+              : h('span', { className: 'checklist-icon pending' });
             return h('li', { key: s.key },
               icon,
               h('div', null,
@@ -821,7 +821,7 @@ function App() {
         h('div', { className: 'search-card' },
           h('div', { className: 'search-card-identity' },
             h('span', { className: 'app-title' }, 'INDForge'),
-            h('span', { className: 'app-subtitle' }, 'Preclinical → IND-enabling biomarker package')
+            h('span', { className: 'app-subtitle' }, 'Preclinical to IND-enabling biomarker package')
           ),
           h('div', { className: 'search-card-controls' },
             h('div', { className: 'dummy-data-toggle' },

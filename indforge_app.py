@@ -1,4 +1,4 @@
-"""INDForge — preclinical → IND-enabling biomarker package app.
+"""INDForge - preclinical IND-enabling biomarker package app.
 
 Serves static assets from indforge_static/ and a small set of mock JSON
 endpoints. Live endpoints are stubs — when wired to Domino, they'd read
