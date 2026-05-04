@@ -18,6 +18,10 @@ fastapi>=0.110
 uvicorn[standard]>=0.28
 pydantic>=2.0
 
+# IND Forge — dose justification export and LLM-drafted briefing copy
+python-docx>=1.1
+anthropic>=0.39  # Optional: only used when API_GAPS.liveDoseDraft is enabled
+
 # Testing
 pytest>=8.0
 pytest-cov>=4.0
