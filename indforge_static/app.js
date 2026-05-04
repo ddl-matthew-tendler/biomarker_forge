@@ -187,6 +187,10 @@ var GLOSSARY = {
     title: 'GxP: family of "Good Practice" standards',
     body: 'Umbrella term for the FDA-aligned quality standards: GLP (lab / animal), GCP (clinical), GMP (manufacturing), GDP (distribution), GVP (pharmacovigilance). When the app refers to a "GxP-validated system" it means the system meets the relevant standard for its workload.'
   },
+  non_glp_study: {
+    title: 'Non-GLP / efficacy study',
+    body: 'Preclinical studies not run under GLP. Typically efficacy studies (does the drug work in a disease model?), pilot dose-range finders, or mechanism-of-action work. They inform the program but are not part of the IND safety filing, and often run at academic labs or non-GLP CROs. The ID prefix in the studies table reflects this: GLP- for GLP, EFF- for non-GLP efficacy.'
+  },
   noael_study: {
     title: 'NOAEL determination study',
     body: 'A pivotal repeat-dose GLP toxicology study (typically 28-day in rat and NHP) designed to identify the highest dose with no adverse effects. The NOAEL is the critical input to the FIH dose calculation.'
@@ -233,7 +237,7 @@ var GLOSSARY = {
   },
   audit_chain: {
     title: 'Audit chain (21 CFR Part 11)',
-    body: 'The signed, time-stamped, immutable record of who did what, when, and to which version. Required for any electronic record submitted to the FDA. IND Forge assembles this metadata so it can be lifted into a validated RIM/Vault system.'
+    body: 'The signed, time-stamped, immutable record of who did what, when, and to which version. Required for any electronic record submitted to the FDA. IND Forge assembles this metadata so it can be transferred into a validated RIM/Vault system.'
   },
   cfr_312: {
     title: '21 CFR §312.23: IND content and format',
@@ -311,7 +315,7 @@ function IndPackageBrowser(props) {
   function liftToVault() {
     setLifted(true);
     setTab('downstream');
-    if (window.antd && window.antd.message) window.antd.message.success('Lifted to Veeva Vault RIM · audit chain preserved');
+    if (window.antd && window.antd.message) window.antd.message.success('Sent to Veeva Vault RIM · audit chain preserved');
   }
 
   if (!manifest) {
@@ -377,12 +381,12 @@ function IndPackageBrowser(props) {
       h(Alert, {
         type: lifted ? 'success' : 'info', showIcon: true, style: { marginBottom: 14 },
         message: lifted
-          ? 'Lifted to Veeva Vault RIM · audit chain preserved'
+          ? 'Sent to Veeva Vault RIM · audit chain preserved'
           : 'After IND Forge: what happens to this package',
         description: lifted
           ? ('Vault assigned a controlled record. The package is now the system of record (GxP). ' +
              'The remaining steps run inside Vault and the FDA submission gateway, IND Forge\'s job is done.')
-          : ('IND Forge\'s output is non-GxP. The downstream flow lifts it into a validated GxP system ' +
+          : ('IND Forge\'s output is non-GxP. The downstream flow sends it to a validated GxP system ' +
              '(Vault RIM), assembles the eCTD modules, and submits via FDA ESG. This is what "filing-ready" means.')
       }),
       h('div', { className: 'pkg-flow' },
@@ -411,7 +415,7 @@ function IndPackageBrowser(props) {
       h(Button, { key: 'docx', onClick: downloadDocx },
         'Download .docx'),
       h(Button, { key: 'vault', type: 'primary', disabled: lifted, onClick: liftToVault },
-        lifted ? '✓ Lifted to Vault RIM' : 'Lift to Veeva Vault RIM'),
+        lifted ? '✓ Sent to Vault RIM' : 'Send to Veeva Vault RIM'),
     ],
   },
     h(Tabs, {
@@ -474,6 +478,41 @@ function ProgramContext(props) {
         h('strong', null, 'IND Package'), ': assemble all the sections required ',
         'by 21 CFR §312.23 into a deliverable for the regulatory team.')
     ) : null
+  );
+}
+
+// ---------- TabExplainer ----------
+//
+// A small "What is this tab?" header any tab can render. Persists the
+// user's "Hide" choice in localStorage per tab so repeat visitors are not
+// re-explained every load. First-time visitors see it expanded; once
+// hidden, a small "Show explanation" link replaces it.
+
+function TabExplainer(props) {
+  var storageKey = 'indforge.explainer.' + props.storageKey;
+  var initialOpen = (function() {
+    try { return window.localStorage.getItem(storageKey) !== 'hidden'; }
+    catch (e) { return true; }
+  })();
+  var _open = useState(initialOpen);
+  var open = _open[0]; var setOpen = _open[1];
+  function hide() {
+    setOpen(false);
+    try { window.localStorage.setItem(storageKey, 'hidden'); } catch (e) {}
+  }
+  function show() {
+    setOpen(true);
+    try { window.localStorage.setItem(storageKey, 'shown'); } catch (e) {}
+  }
+  if (!open) {
+    return h('div', { className: 'tab-explainer-stub' },
+      h('button', { className: 'tab-explainer-show', onClick: show }, 'Show: ' + (props.title || 'what this tab is for')));
+  }
+  return h('div', { className: 'tab-explainer' },
+    h('div', { className: 'tab-explainer-head' },
+      h('span', { className: 'tab-explainer-title' }, props.title || 'What this tab is for'),
+      h('button', { className: 'tab-explainer-hide', onClick: hide, 'aria-label': 'Hide explanation' }, 'Hide')),
+    h('div', { className: 'tab-explainer-body' }, props.children)
   );
 }
 
@@ -544,8 +583,8 @@ function AuditLineageDrawer() {
   var user = (window.__indforgeContext && window.__indforgeContext.user) || 'demo.user@sponsor.com';
 
   function exportToVault() {
-    dlog('INFO', 'Vault RIM lift requested for ' + (d.value_id || 'value'));
-    if (window.antd && window.antd.message) window.antd.message.success('Vault RIM lift packaged · snapshot ' + snapshot);
+    dlog('INFO', 'Vault RIM transfer requested for ' + (d.value_id || 'value'));
+    if (window.antd && window.antd.message) window.antd.message.success('Sent to Vault RIM, snapshot · snapshot ' + snapshot);
   }
 
   return h(Drawer, {
@@ -937,18 +976,17 @@ function SafetyPage(props) {
   ];
 
   return h('div', null,
-    h('div', { className: 'page-explainer' },
-      h('div', { className: 'page-explainer-title' }, 'What this tab is for'),
+    h(TabExplainer, { storageKey: 'safety', title: 'What this tab is for' },
       h('p', null,
-        'You have a single drug, INDF-127. Before dosing humans, animal studies were run to ',
+        'You have one drug, INDF-127. Before dosing humans, animal studies were run to ',
         'find out what could go wrong. This tab shows two things: (1) the ',
         h('strong', null, 'safety biomarker panel'),
-        ', a fixed list of analytes (ALT, cTnI, CREA, IL-6, etc.) the clinical team will measure ',
+        ', a fixed list of analytes (ALT, cTnI, CREA, IL-6 and others) the clinical team will measure ',
         'during the FIH trial to detect toxicity early; and (2) the ',
         h('strong', null, 'GLP study findings'),
         ' that justify keeping each one in the panel and inform stopping rules.'),
       h('p', { style: { marginBottom: 0 } },
-        'These are not other compounds. They are the markers monitored alongside INDF-127.')),
+        'These are not other compounds. They are markers monitored alongside INDF-127.')),
 
     h('div', { className: 'stats-row' },
       h(StatCard, { label: 'Safety biomarkers in panel', value: overlap.candidates.length, color: 'primary',
@@ -1094,7 +1132,10 @@ function BootstrapHistogram(props) {
 function SweepPage(props) {
   var cohorts = props.cohorts;
 
-  var _phase = useState('config'); // 'config' | 'running' | 'results'
+  // If the parent passes cached results from a previous run, start in
+  // the results phase so "View sweep" from PK/PD lands on the details
+  // instead of the empty config form.
+  var _phase = useState(props.cachedResults ? 'results' : 'config'); // 'config' | 'running' | 'results'
   var phase = _phase[0]; var setPhase = _phase[1];
 
   var _cohortId = useState(cohorts[0].id);
@@ -1114,9 +1155,14 @@ function SweepPage(props) {
   var pickerOpen = _pickerOpen[0]; var setPickerOpen = _pickerOpen[1];
 
   // Honor the autoOpenPicker prop so "Run sweep now" from PK/PD lands the
-  // user directly on the cluster picker, not just on this tab.
+  // user directly on the cluster picker, not just on this tab. One-shot:
+  // clear the parent flag right after we open it so navigating back to
+  // the tab later doesn't re-open the modal.
   useEffect(function() {
-    if (props.autoOpenPicker && phase === 'config') setPickerOpen(true);
+    if (props.autoOpenPicker && phase === 'config') {
+      setPickerOpen(true);
+      if (props.onAutoOpenConsumed) props.onAutoOpenConsumed();
+    }
   }, [props.autoOpenPicker]);
 
   var _progress = useState(0);
@@ -1124,7 +1170,7 @@ function SweepPage(props) {
   var _stage = useState(0); // 0 queued · 1 running · 2 succeeded
   var stage = _stage[0]; var setStage = _stage[1];
 
-  var _results = useState(null);
+  var _results = useState(props.cachedResults || null);
   var results = _results[0]; var setResults = _results[1];
 
   var _drawer = useState(null);
@@ -1166,7 +1212,7 @@ function SweepPage(props) {
         r.parameters = { factors: params.factors, bootstrap: params.bootstrap, confidence: params.confidence / 100 };
         setResults(r);
         setPhase('results');
-        if (props.onCompleted) props.onCompleted(r.sweep_id);
+        if (props.onCompleted) props.onCompleted(r);
       }
     }, 150);
   }
@@ -1182,6 +1228,16 @@ function SweepPage(props) {
   // ----- Config view -----
   function renderConfig() {
     return h('div', null,
+      h(TabExplainer, { storageKey: 'sweep', title: 'What this tab is for' },
+        h('p', null,
+          'A ', h('strong', null, 'translatability sweep'),
+          ' integrates the multi-omics data (RNA-seq, proteomics, metabolomics) from the animal cohort ',
+          'and quantifies how reliably each candidate biomarker would carry from animals to humans. ',
+          'Each biomarker comes with a 95% confidence interval from bootstrap resampling.'),
+        h('p', { style: { marginBottom: 0 } },
+          'The output anchors the biomarker plan in the IND. Compute is HPC-shaped and animal omics ',
+          'is pinned to on-prem storage by IT policy, so the workload routes to the on-prem SLURM cluster.')),
+
       h('div', { className: 'sweep-config-grid' },
         h('div', { className: 'sweep-card' },
           h('div', { className: 'sweep-card-title' }, 'Input cohort'),
@@ -1235,8 +1291,12 @@ function SweepPage(props) {
       ),
 
       h('div', { className: 'sweep-run-row' },
-        h(Button, { type: 'primary', size: 'large', onClick: function() { setPickerOpen(true); } },
-          'Run translatability sweep'),
+        h('div', { className: 'sweep-run-cta' },
+          h(Button, { type: 'primary', size: 'large', onClick: function() { setPickerOpen(true); } },
+            'Run translatability sweep'),
+          h('div', { className: 'sweep-run-caption' },
+            'Combines the animal cohort’s molecular data and scores how reliably each biomarker would translate to a human trial.')
+        ),
         isOnPrem
           ? h('span', { className: 'residency-pill ok' }, '✓ Animal omics stays on-prem · GLP audit chain preserved')
           : h('span', { className: 'residency-pill warn' }, '⚠ Data-transfer review required for preclinical'),
@@ -1707,6 +1767,16 @@ function PKPDPage(props) {
   }
 
   return h('div', null,
+    h(TabExplainer, { storageKey: 'pkpd', title: 'What this tab is for' },
+      h('p', null,
+        'This tab derives the First-in-Human starting dose from the animal NOAEL using ',
+        h('strong', null, 'FDA 2005'),
+        ' surface-area scaling and (for biologics) the ',
+        h('strong', null, 'EMA 2017'),
+        ' MABEL approach. Every input is editable and every derived value (HED, MRSD, MABEL, exposure margin) recomputes live.'),
+      h('p', { style: { marginBottom: 0 } },
+        'Click any number to see its formula and source. When the math is right, export the dose justification document, a 9-section .docx that slots into the IND submission package.')),
+
     h('div', { className: 'stats-row' },
       h(StatCard, { label: h(Term, { term: 'compound', subtle: true }, 'Compound'),
         value: pk.compound, color: 'primary', sub: pk.indication }),
@@ -1824,12 +1894,11 @@ function IndPackagePage(props) {
   }
 
   return h('div', null,
-    h('div', { className: 'page-explainer' },
-      h('div', { className: 'page-explainer-title' }, 'What this tab is for'),
+    h(TabExplainer, { storageKey: 'ind', title: 'What this tab is for' },
       h('p', null,
-        'The ', h(Term, { term: 'ind_package', subtle: true }, h('strong', null, 'IND package')),
+        'The ', h('strong', null, 'IND package'),
         ' is the dossier the sponsor files with the FDA before any human dosing. ',
-        h(Term, { term: 'cfr_312', subtle: true }, h('strong', null, '21 CFR §312.23')),
+        h('strong', null, '21 CFR §312.23'),
         ' lists all 13 sections it must contain. IND Forge produces five of them ',
         '(highlighted in purple below). The other eight are owned by CMC, Clinical Development, ',
         'or Regulatory and shown for context only.'),
@@ -1838,7 +1907,7 @@ function IndPackagePage(props) {
         'Run the ', h('strong', null, 'Translatability Sweep'), ' to attach the biomarker plan; ',
         'export the FIH dose justification on ', h('strong', null, 'PK/PD & FIH Dose'),
         ' to attach the dose math. When all five in-scope sections are done, click ',
-        h('strong', null, '"Open IND package"'), ' (top right of this panel) to assemble and review.')),
+        h('strong', null, '“Open IND package”'), ' (top right of this panel) to assemble and review.')),
 
     h('div', { className: 'stats-row' },
       h(StatCard, { label: 'Compound', value: pkg.compound, color: 'primary' }),
@@ -2129,7 +2198,11 @@ function App() {
   })());
   var routeApp = _route[0];
 
-  var defaultTab = routeApp === 'biomarker-forge' ? 'candidates' : 'sweep';
+  // Default landing follows the real workflow order. Safety & Tox is where
+  // the pharm-tox lead starts: review the GLP studies, then build the
+  // biomarker plan (Translatability Sweep), then derive the dose (PK/PD),
+  // then assemble the package (IND Package).
+  var defaultTab = routeApp === 'biomarker-forge' ? 'candidates' : 'safety';
   var _tab = useState(defaultTab);
   var activeTab = _tab[0];
   var setActiveTab = _tab[1];
@@ -2195,6 +2268,13 @@ function App() {
   var sweepCohorts = _sw[0];
   var setSweepCohorts = _sw[1];
 
+  // Cached results from the most recently completed sweep so navigating
+  // away from the Sweep tab and back via "View sweep" lands on the results
+  // phase instead of the empty config phase.
+  var _swr = useState(null);
+  var lastSweepResults = _swr[0];
+  var setLastSweepResults = _swr[1];
+
   // On mount: probe live data; fall back to dummy silently.
   useEffect(function() {
     dlog('INFO', 'App mounted');
@@ -2250,7 +2330,10 @@ function App() {
     ? allTabs.filter(function(t) { return t.key !== 'candidates'; })
     : allTabs;
 
-  function onSweepCompleted(runId) { setLastSweepId(runId); }
+  function onSweepCompleted(results) {
+    setLastSweepId(results.sweep_id);
+    setLastSweepResults(results);
+  }
   function onAttachEvidence(itemKey, kind) {
     // Walk-up affordance: jumping to the right tab is the way to attach
     // evidence. The IND Package can't generate it itself.
@@ -2271,7 +2354,9 @@ function App() {
     activeTab === 'candidates' ? h(CandidatesPage, { candidates: candidates }) :
     activeTab === 'safety'     ? h(SafetyPage,     { overlap: overlap, studies: studies }) :
     activeTab === 'sweep'      ? h(SweepPage,      { cohorts: sweepCohorts, onCompleted: onSweepCompleted,
-                                                     autoOpenPicker: pendingSweepRun }) :
+                                                     cachedResults: lastSweepResults,
+                                                     autoOpenPicker: pendingSweepRun,
+                                                     onAutoOpenConsumed: function() { setPendingSweepRun(false); } }) :
     activeTab === 'pkpd'       ? h(PKPDPage,       { pkpd: pkpd, sweepRunId: lastSweepId,
                                                      onJumpToSweep: function() { setActiveTab('sweep'); },
                                                      onRunSweep: function() { setPendingSweepRun(true); setActiveTab('sweep'); },

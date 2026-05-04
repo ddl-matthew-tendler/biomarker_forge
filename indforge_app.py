@@ -410,7 +410,7 @@ def lineage(value_id: str):
         "kernel_version": DOSE_MATH_KERNEL_VERSION,
         "user": {"id": os.environ.get("DOMINO_PROJECT_OWNER", "demo.user@sponsor.com"), "role": "Pharmacometrics Lead"},
         "timestamp": now,
-        "vault_lift_target": "Veeva Vault RIM · Submissions · Pre-IND",
+        "vault_destination": "Veeva Vault RIM · Submissions · Pre-IND",
     }
 
 
@@ -637,9 +637,9 @@ def dose_justification_export(document_id: str):
     kv("Drafted at", record["drafted_at"])
     kv("Prompt version", record["prompt_version"])
     kv("LLM model", record["model_id"])
-    kv("Vault lift target", "Veeva Vault RIM · Submissions · Pre-IND")
+    kv("Vault destination", "Veeva Vault RIM · Submissions · Pre-IND")
     p("This document is non-GxP at execution time. Metadata is structured for "
-      "lift into a validated RIM/Vault environment for filing.")
+      "transfer into a validated RIM/Vault environment for filing.")
 
     # Citations footer
     h2("Citations")
@@ -755,7 +755,7 @@ def _assemble_ind_package(compound_id: str, sweep_id: Optional[str],
          "scope": "in_scope", "status": "done", "owner": "IND Forge",
          "body": (
              f"Snapshot ID: {snapshot_id}. Math kernel: {DOSE_MATH_KERNEL_VERSION}. "
-             f"Drafted by {user} at {now_iso}. Vault lift target: Veeva Vault RIM · Submissions · Pre-IND."
+             f"Drafted by {user} at {now_iso}. Vault destination: Veeva Vault RIM · Submissions · Pre-IND."
          )},
         {"key": "prior_human", "cfr": "§312.23(a)(9)", "title": "Previous human experience",
          "scope": "external", "status": "external", "owner": "Clinical Development",
@@ -784,7 +784,7 @@ def _assemble_ind_package(compound_id: str, sweep_id: Optional[str],
 
 
 _IND_DOWNSTREAM_FLOW = [
-    {"step": 1, "label": "Lift to Veeva Vault RIM",
+    {"step": 1, "label": "Send to Veeva Vault RIM",
      "owner": "Sponsor regulatory ops",
      "duration": "minutes",
      "detail": "Snapshot, audit chain, math kernel version, and sections are validated on import. "
@@ -877,7 +877,7 @@ def ind_package_export(package_id: str):
         h2(f"{s['cfr']} · {s['title']}")
         doc.add_paragraph(s["body"])
 
-    h2("Downstream workflow, what happens after Vault RIM lift")
+    h2("Downstream workflow, what happens after sending to Vault RIM")
     for step in rec["downstream_workflow"]:
         h3(f"Step {step['step']}: {step['label']}")
         kv("Owner", step["owner"])

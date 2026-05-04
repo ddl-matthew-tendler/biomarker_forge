@@ -15,11 +15,16 @@ var MOCK_CANDIDATES = [
 ];
 
 // Tox studies summary (legacy shape, kept for the existing study table)
+// Prefix convention: GLP-### for studies that go in the IND safety package
+// (run under 21 CFR Part 58); EFF-### for non-GLP efficacy / pharmacology
+// studies (academic labs or non-GLP CROs) that inform the program but do
+// not support the safety filing.
 var MOCK_TOX_STUDIES = [
-  { id: 'GLP-001', species: 'Rat',   study_type: '28-day GLP',  noael_mg_kg: 12,  findings: ['Mild ALT elevation @ 30 mg/kg'], glp: true,  status: 'Complete' },
-  { id: 'GLP-002', species: 'NHP',   study_type: '28-day GLP',  noael_mg_kg: 6,   findings: ['Transient IL-6 spike @ 20 mg/kg'], glp: true, status: 'Complete' },
-  { id: 'GLP-003', species: 'Mouse', study_type: 'Efficacy',    noael_mg_kg: null, findings: [], glp: false, status: 'Complete' },
-  { id: 'GLP-004', species: 'Rat',   study_type: 'Cardiovascular safety', noael_mg_kg: 15, findings: ['No cTnI change'], glp: true, status: 'Complete' },
+  { id: 'GLP-001', species: 'Rat',   study_type: '28-day repeat-dose tox',  noael_mg_kg: 12,  findings: ['Mild ALT elevation @ 30 mg/kg'], glp: true,  status: 'Complete' },
+  { id: 'GLP-002', species: 'NHP',   study_type: '28-day repeat-dose tox',  noael_mg_kg: 6,   findings: ['Transient IL-6 spike @ 20 mg/kg'], glp: true, status: 'Complete' },
+  { id: 'GLP-003', species: 'Rat',   study_type: 'Genotoxicity panel (Ames + in vivo MN)', noael_mg_kg: null, findings: ['Negative Ames; negative MN'], glp: true, status: 'Complete' },
+  { id: 'GLP-004', species: 'Rat',   study_type: 'Cardiovascular safety pharmacology', noael_mg_kg: 15, findings: ['No QTc, no cTnI change'], glp: true, status: 'Complete' },
+  { id: 'EFF-001', species: 'Mouse', study_type: 'Efficacy (tumor regression model)', noael_mg_kg: null, findings: ['Tumor regression at 5 mg/kg in syngeneic CT26 model'], glp: false, status: 'Complete' },
 ];
 
 // Full GLP study records, used by the safety heatmap, dose calculator,
