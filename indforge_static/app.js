@@ -1,7 +1,7 @@
-// INDForge — preclinical IND-enabling biomarker app.
+// INDForge, preclinical IND-enabling biomarker app.
 
 if (!window.antd) {
-  var msg = 'window.antd is undefined — AntD UMD failed to initialize. ' +
+  var msg = 'window.antd is undefined, AntD UMD failed to initialize. ' +
     'Check dayjs load order (must load before antd) and network access to unpkg.com.';
   try { window.__indforgePush && window.__indforgePush('ERROR', msg); } catch (e) {}
   var root = document.getElementById('root');
@@ -32,7 +32,7 @@ var Collapse = antdLib.Collapse;
 var Select = antdLib.Select;
 var Progress = antdLib.Progress;
 
-// Unified debug logger — proxies to the boot log so everything lives in one store.
+// Unified debug logger, proxies to the boot log so everything lives in one store.
 function dlog(level, msg) {
   try {
     if (typeof window.__indforgePush === 'function') { window.__indforgePush(level, msg); return; }
@@ -121,10 +121,10 @@ var GLOSSARY = {
   },
   fih: {
     title: 'First-in-Human (FIH)',
-    body: 'The first time the compound is given to a person. Conducted in Phase 1 under an active IND. The starting dose is the most scrutinized number in the entire IND package — it must be defensibly low.'
+    body: 'The first time the compound is given to a person. Conducted in Phase 1 under an active IND. The starting dose is the most scrutinized number in the entire IND package, it must be defensibly low.'
   },
   ind: {
-    title: 'IND — Investigational New Drug application',
+    title: 'IND: Investigational New Drug application',
     body: 'The submission to the FDA that authorizes a sponsor to begin human clinical trials of a new drug. Structured per 21 CFR §312.23. IND Forge owns the Pharmacology & Toxicology section and the FIH dose justification.'
   },
   ind_package: {
@@ -134,23 +134,23 @@ var GLOSSARY = {
 
   // Pharmacology / dose math
   pkpd: {
-    title: 'PK/PD — Pharmacokinetics & Pharmacodynamics',
-    body: 'PK is what the body does to the drug (absorption, distribution, metabolism, excretion). PD is what the drug does to the body (target engagement, biomarker effect). The PK/PD model links exposure (e.g. AUC) to a measurable response — used to anchor the FIH dose.'
+    title: 'PK/PD: Pharmacokinetics & Pharmacodynamics',
+    body: 'PK is what the body does to the drug (absorption, distribution, metabolism, excretion). PD is what the drug does to the body (target engagement, biomarker effect). The PK/PD model links exposure (e.g. AUC) to a measurable response, used to anchor the FIH dose.'
   },
   noael: {
-    title: 'NOAEL — No-Observed-Adverse-Effect Level',
+    title: 'NOAEL: No-Observed-Adverse-Effect Level',
     body: 'The highest animal dose at which no adverse effects are seen in the GLP repeat-dose tox study. The pivotal anchor for FIH dose calculation. Lower NOAEL → lower starting human dose. Reported in mg/kg.'
   },
   hed: {
-    title: 'HED — Human Equivalent Dose',
+    title: 'HED: Human Equivalent Dose',
     body: 'The animal NOAEL scaled to humans using surface-area allometric scaling (BW^0.67 per FDA 2005). Accounts for the fact that smaller animals metabolize drugs faster per kilogram. Reported in mg/kg.'
   },
   mrsd: {
-    title: 'MRSD — Maximum Recommended Starting Dose',
+    title: 'MRSD: Maximum Recommended Starting Dose',
     body: 'The HED divided by a safety factor (default 10×). One of two possible controlling values for the FIH starting dose. Per FDA 2005.'
   },
   mabel: {
-    title: 'MABEL — Minimum Anticipated Biological Effect Level',
+    title: 'MABEL: Minimum Anticipated Biological Effect Level',
     body: 'For biologics, the dose anchored at a low (typically 10%) receptor occupancy. Mandated by EMA 2017 post-TGN1412. For receptor-binding biologics MABEL is usually the controlling (lower) value vs. MRSD.'
   },
   exposure_margin: {
@@ -162,22 +162,30 @@ var GLOSSARY = {
     body: 'Mathematical translation of a dose between species using a body-weight power law. FDA 2005 default uses the BW^0.67 (surface-area) exponent; some programs use Boxenbaum BW^0.75.'
   },
   kd: {
-    title: 'Kd — Dissociation constant',
+    title: 'Kd: Dissociation constant',
     body: 'Affinity of the drug for its target receptor (lower Kd = tighter binding). Used in the MABEL calculation to derive the free drug concentration that produces a given receptor occupancy.'
   },
   receptor_occupancy: {
     title: 'Receptor occupancy (RO)',
-    body: 'The fraction of target receptors bound by the drug. MABEL is anchored at a conservative threshold — typically 10% — so the FIH dose produces minimal pharmacology in humans.'
+    body: 'The fraction of target receptors bound by the drug. MABEL is anchored at a conservative threshold, typically 10%, so the FIH dose produces minimal pharmacology in humans.'
   },
   vd: {
-    title: 'Vd — Volume of distribution',
+    title: 'Vd: Volume of distribution',
     body: 'Apparent volume of body fluid the drug is distributed into. For monoclonal antibodies, typically 4–7 L (close to plasma volume) because they don\'t enter cells.'
   },
 
   // Safety / Tox
   glp: {
-    title: 'GLP — Good Laboratory Practice',
-    body: 'A set of regulatory standards (21 CFR Part 58) for non-clinical lab studies that support FDA submissions. GLP-compliant studies have full audit chains, signed protocols, archived raw data, and certified study directors.'
+    title: 'GLP: Good Laboratory Practice',
+    body: 'Regulatory standards (21 CFR Part 58) for non-clinical lab studies (animal studies) that support FDA submissions. GLP-compliant studies have full audit chains, signed protocols, archived raw data, and certified study directors. Distinct from GCP, which governs human trials.'
+  },
+  gcp: {
+    title: 'GCP: Good Clinical Practice',
+    body: 'The international quality standard (ICH E6) for clinical trials in humans. Governs how investigators recruit and consent subjects, how data is collected and monitored, and how the sponsor reports adverse events. GLP applies to animal studies; GCP applies to human studies.'
+  },
+  gxp: {
+    title: 'GxP: family of "Good Practice" standards',
+    body: 'Umbrella term for the FDA-aligned quality standards: GLP (lab / animal), GCP (clinical), GMP (manufacturing), GDP (distribution), GVP (pharmacovigilance). When the app refers to a "GxP-validated system" it means the system meets the relevant standard for its workload.'
   },
   noael_study: {
     title: 'NOAEL determination study',
@@ -185,7 +193,7 @@ var GLOSSARY = {
   },
   safety_pharm: {
     title: 'Safety pharmacology',
-    body: 'A panel of in vivo and in vitro studies evaluating effects on critical organ systems — typically cardiovascular (QT prolongation), CNS, and respiratory. Required for IND under ICH S7A.'
+    body: 'A panel of in vivo and in vitro studies evaluating effects on critical organ systems, typically cardiovascular (QT prolongation), CNS, and respiratory. Required for IND under ICH S7A.'
   },
   genotox: {
     title: 'Genotoxicity panel',
@@ -211,7 +219,7 @@ var GLOSSARY = {
   },
   ortholog: {
     title: 'Ortholog mapping',
-    body: 'Lookup table that links animal genes/proteins (e.g. cynomolgus macaque) to their human counterparts. Required to translate animal signals into human biomarkers. Coverage rarely hits 100% — gaps are flagged.'
+    body: 'Lookup table that links animal genes/proteins (e.g. cynomolgus macaque) to their human counterparts. Required to translate animal signals into human biomarkers. Coverage rarely hits 100%, gaps are flagged.'
   },
   factor_model: {
     title: 'Factor model (MOFA+ / DIABLO)',
@@ -228,8 +236,8 @@ var GLOSSARY = {
     body: 'The signed, time-stamped, immutable record of who did what, when, and to which version. Required for any electronic record submitted to the FDA. IND Forge assembles this metadata so it can be lifted into a validated RIM/Vault system.'
   },
   cfr_312: {
-    title: '21 CFR §312.23 — IND content and format',
-    body: 'The federal regulation defining what every IND must contain. Each subsection (a)(1) through (a)(10) is owned by a different team — IND Forge primarily owns (a)(8) Pharm/Tox.'
+    title: '21 CFR §312.23: IND content and format',
+    body: 'The federal regulation defining what every IND must contain. Each subsection (a)(1) through (a)(10) is owned by a different team, IND Forge primarily owns (a)(8) Pharm/Tox.'
   },
   fda_2005: {
     title: 'FDA 2005 MRSD guidance',
@@ -250,22 +258,26 @@ var GLOSSARY = {
 };
 
 function Term(props) {
-  // props: term (key into GLOSSARY) | inline body, children = visible text
+  // The visible text is plain. Only the small "i" icon next to it triggers
+  // the tooltip on hover, so users who already know the term aren't
+  // distracted by definitions popping up everywhere they read the page.
   var entry = props.term && GLOSSARY[props.term];
   var title = entry ? h('div', { style: { maxWidth: 320 } },
     h('div', { style: { fontWeight: 700, marginBottom: 4 } }, entry.title),
     h('div', { style: { fontSize: 12, lineHeight: 1.45 } }, entry.body)
   ) : (props.body || props.title || '');
-  return h(Tooltip, { title: title, color: '#3F4547', placement: props.placement || 'top' },
-    h('span', { className: 'glossary-term' + (props.subtle ? ' subtle' : '') },
-      props.children, h('span', { className: 'glossary-q' }, '?'))
+  return h('span', { className: 'glossary-term-wrap' + (props.subtle ? ' subtle' : '') },
+    props.children,
+    h(Tooltip, { title: title, color: '#3F4547', placement: props.placement || 'top' },
+      h('span', { className: 'glossary-i', tabIndex: 0,
+                  role: 'button', 'aria-label': entry ? entry.title : 'More info' }, 'i'))
   );
 }
 
 // ---------- IND Package Browser (in-app document viewer) ----------
 //
 // Replaces the previous "Download .docx and walk away" experience. The user
-// stays in-app: package opens in a modal with two tabs — Sections (the
+// stays in-app: package opens in a modal with two tabs, Sections (the
 // assembled IND with content per section, scope-coded) and Downstream
 // (the real-world flow after Vault RIM lift). They can then download the
 // .docx OR simulate the Vault lift, which surfaces the timeline card.
@@ -326,7 +338,7 @@ function IndPackageBrowser(props) {
           h('span', { className: 'pkg-cover-k' }, 'Snapshot'),
           h('code', null, manifest.snapshot_id),
           h('span', { className: 'pkg-cover-k' }, 'Sweep'),
-          h('code', null, manifest.sweep_id || '—'))
+          h('code', null, manifest.sweep_id || '-'))
       ),
 
       h('div', { className: 'pkg-section-group' },
@@ -369,7 +381,7 @@ function IndPackageBrowser(props) {
           : 'After IND Forge: what happens to this package',
         description: lifted
           ? ('Vault assigned a controlled record. The package is now the system of record (GxP). ' +
-             'The remaining steps run inside Vault and the FDA submission gateway — IND Forge\'s job is done.')
+             'The remaining steps run inside Vault and the FDA submission gateway, IND Forge\'s job is done.')
           : ('IND Forge\'s output is non-GxP. The downstream flow lifts it into a validated GxP system ' +
              '(Vault RIM), assembles the eCTD modules, and submits via FDA ESG. This is what "filing-ready" means.')
       }),
@@ -393,7 +405,7 @@ function IndPackageBrowser(props) {
     open: open, onCancel: props.onClose, width: 920,
     title: h('span', null,
       h(Term, { term: 'ind_package', subtle: true }, 'IND Package'),
-      ' — ', manifest.compound_id),
+      ', ', manifest.compound_id),
     footer: [
       h(Button, { key: 'close', onClick: props.onClose }, 'Close'),
       h(Button, { key: 'docx', onClick: downloadDocx },
@@ -420,30 +432,57 @@ function IndPackageBrowser(props) {
 function ProgramContext(props) {
   var pk = props.pkpd;
   var pkg = props.pkg;
+  var _open = useState(false);
+  var open = _open[0]; var setOpen = _open[1];
   return h('div', { className: 'program-context' },
     h('div', { className: 'pc-row' },
-      h('span', { className: 'pc-label' }, 'Program'),
-      h(Term, { term: 'compound' }, h('span', { className: 'pc-strong' }, pk.compound)),
-      h('span', { className: 'pc-arrow' }, '→'),
-      h(Term, { term: 'indication' }, h('span', null, pk.indication)),
-      h('span', { className: 'pc-arrow' }, '→'),
-      h(Term, { term: 'ind' }, h('span', null, 'IND target ' + pkg.target_ind_submission)),
-      h('span', { className: 'pc-arrow' }, '→'),
-      h(Term, { term: 'fih' }, h('span', null, 'First-in-Human Phase 1')),
-      h('span', { className: 'pc-spacer' }),
-      h('span', { className: 'pc-meta' }, 'Modality: ', pk.modality === 'biologic' ? 'biologic (mAb)' : 'small molecule'),
-      h('span', { className: 'pc-meta' }, 'Pivotal NOAEL study: ',
-        h(Term, { term: 'noael_study' }, pk.pivotal_glp_study))
-    )
+      h('span', { className: 'pc-tag' }, 'About this program'),
+      h('div', { className: 'pc-kvs' },
+        h('span', { className: 'pc-kv' },
+          h('span', { className: 'pc-k' }, 'Compound:'),
+          h('span', { className: 'pc-v' }, pk.compound),
+          h(Term, { term: 'compound', subtle: true })),
+        h('span', { className: 'pc-kv' },
+          h('span', { className: 'pc-k' }, 'Indication:'),
+          h('span', { className: 'pc-v' }, pk.indication)),
+        h('span', { className: 'pc-kv' },
+          h('span', { className: 'pc-k' }, 'IND target:'),
+          h('span', { className: 'pc-v' }, pkg.target_ind_submission),
+          h(Term, { term: 'ind', subtle: true })),
+        h('span', { className: 'pc-kv' },
+          h('span', { className: 'pc-k' }, 'Trial:'),
+          h('span', { className: 'pc-v' }, 'First-in-Human Phase 1'),
+          h(Term, { term: 'fih', subtle: true }))),
+      h('button', { className: 'pc-explain', onClick: function() { setOpen(!open); } },
+        open ? 'Hide explanation' : 'How does this app work?')
+    ),
+    open ? h('div', { className: 'pc-explain-body' },
+      h('p', null,
+        'IND Forge prepares a single drug for its first human trial. ',
+        'You are working on one compound (', h('strong', null, pk.compound),
+        ', a humanized monoclonal antibody) for one indication (', pk.indication,
+        '). The deliverables are the Pharmacology and Toxicology section ',
+        '(21 CFR §312.23(a)(8)) and the FIH dose justification ',
+        '(part of §312.23(a)(6)) of the IND submission.'),
+      h('p', null,
+        'Each tab covers part of that work. ',
+        h('strong', null, 'Safety & Tox'), ': review what the GLP animal studies ',
+        'showed about toxicity. ', h('strong', null, 'Translatability Sweep'), ': ',
+        'integrate multi-omics data from the animal cohort to build the ',
+        'biomarker plan for the human trial. ', h('strong', null, 'PK/PD & FIH Dose'),
+        ': derive the starting dose from animal NOAEL using FDA / EMA guidance. ',
+        h('strong', null, 'IND Package'), ': assemble all the sections required ',
+        'by 21 CFR §312.23 into a deliverable for the regulatory team.')
+    ) : null
   );
 }
 
-// ---------- TraceVal — a clickable numeric token tied to its source ----------
+// ---------- TraceVal, a clickable numeric token tied to its source ----------
 //
 // Every displayed dose number, margin, or biomarker score should be a
 // clickable token. Hover shows the formula or source; click opens the
 // Audit Lineage drawer scoped to that value. This is the "every number
-// traces" promise the spec makes — wired here so we never hand-craft it.
+// traces" promise the spec makes, wired here so we never hand-craft it.
 
 function TraceVal(props) {
   // props: value (number|string), unit?, formula?, citation?, sources?,
@@ -513,7 +552,7 @@ function AuditLineageDrawer() {
     open: open,
     onClose: function() { setOpen(false); },
     width: 540,
-    title: 'Audit & lineage' + (d.value_id ? ' — ' + d.value_id : ''),
+    title: 'Audit & lineage' + (d.value_id ? ', ' + d.value_id : ''),
     styles: { body: { padding: '20px 24px' } }
   },
     !detail ? null : h('div', null,
@@ -521,7 +560,7 @@ function AuditLineageDrawer() {
         h('div', { className: 'drawer-section-title' }, 'Value'),
         h('div', { className: 'audit-grid' },
           h('span', { className: 'k' }, 'ID'),       h('span', { className: 'v' }, d.value_id),
-          h('span', { className: 'k' }, 'Value'),    h('span', { className: 'v' }, (d.value != null ? d.value : '—') + (d.unit ? ' ' + d.unit : '')),
+          h('span', { className: 'k' }, 'Value'),    h('span', { className: 'v' }, (d.value != null ? d.value : '-') + (d.unit ? ' ' + d.unit : '')),
           d.formula ? h('span', { className: 'k' }, 'Formula') : null,
           d.formula ? h('span', { className: 'v' }, d.formula) : null,
           d.citation ? h('span', { className: 'k' }, 'Citation') : null,
@@ -552,15 +591,15 @@ function AuditLineageDrawer() {
           h('span', { className: 'k' }, 'User'),       h('span', { className: 'v' }, user),
           h('span', { className: 'k' }, 'Role'),       h('span', { className: 'v' }, 'Pharmacometrics Lead'),
           h('span', { className: 'k' }, 'Timestamp'),  h('span', { className: 'v' }, new Date().toISOString()),
-          h('span', { className: 'k' }, 'Signature'),  h('span', { className: 'v' }, '— (placeholder; non-GxP at execution)')
+          h('span', { className: 'k' }, 'Signature'),  h('span', { className: 'v' }, '- (placeholder; non-GxP at execution)')
         )
       ),
       d.compute ? h('div', { className: 'drawer-section' },
         h('div', { className: 'drawer-section-title' }, 'Compute provenance'),
         h('div', { className: 'audit-grid' },
-          h('span', { className: 'k' }, 'Cluster'),   h('span', { className: 'v' }, d.compute.cluster || '—'),
-          h('span', { className: 'k' }, 'Partition'), h('span', { className: 'v' }, d.compute.partition || '—'),
-          h('span', { className: 'k' }, 'Wall time'), h('span', { className: 'v' }, d.compute.wall_time || '—'),
+          h('span', { className: 'k' }, 'Cluster'),   h('span', { className: 'v' }, d.compute.cluster || '-'),
+          h('span', { className: 'k' }, 'Partition'), h('span', { className: 'v' }, d.compute.partition || '-'),
+          h('span', { className: 'k' }, 'Wall time'), h('span', { className: 'v' }, d.compute.wall_time || '-'),
           h('span', { className: 'k' }, 'On-prem'),   h('span', { className: 'v ok' }, d.compute.on_prem ? '✓ yes (no egress)' : '✗ no')
         )
       ) : null,
@@ -586,7 +625,7 @@ function apiGet(path) {
   });
 }
 
-// Debug accordion — reads window.__indforgeLog and re-renders on an interval
+// Debug accordion, reads window.__indforgeLog and re-renders on an interval
 // so new events show up without manual refresh. Open by default when there are
 // ERRORs, collapsed otherwise.
 function DebugAccordion() {
@@ -744,7 +783,7 @@ function CandidatesPage(props) {
 
     h('div', { className: 'panel' },
       h('div', { className: 'panel-header' },
-        h('span', { className: 'panel-title' }, filterLabel ? 'Candidates — ' + filterLabel : 'All candidates'),
+        h('span', { className: 'panel-title' }, filterLabel ? 'Candidates, ' + filterLabel : 'All candidates'),
         filterLabel ? h(Tag, { closable: true, onClose: function() { setTableFilter(null); }, color: 'purple' }, filterLabel) : null
       ),
       h('div', { className: 'panel-body no-pad' },
@@ -756,7 +795,7 @@ function CandidatesPage(props) {
       open: !!selected,
       onClose: function() { setSelected(null); },
       width: 520,
-      title: selected ? selected.symbol + ' — ' + selected.id : '',
+      title: selected ? selected.symbol + ', ' + selected.id : '',
       styles: { body: { padding: '20px 24px' } },
     }, selected ? h('div', null,
       h('div', { className: 'drawer-section' },
@@ -890,7 +929,7 @@ function SafetyPage(props) {
       render: function(v) { return v ? h(Tag, { color: 'green' }, 'GLP') : h(Tag, null, 'non-GLP'); }
     },
     { title: 'NOAEL (mg/kg)', dataIndex: 'noael_mg_kg', key: 'noael', width: 140,
-      render: function(v) { return v != null ? v : '—'; }
+      render: function(v) { return v != null ? v : '-'; }
     },
     { title: 'Findings', dataIndex: 'findings', key: 'findings',
       render: function(fs) { return (fs && fs.length) ? fs.join('; ') : h('span', { style: { color: '#8F8FA3' } }, 'None') }
@@ -898,11 +937,25 @@ function SafetyPage(props) {
   ];
 
   return h('div', null,
+    h('div', { className: 'page-explainer' },
+      h('div', { className: 'page-explainer-title' }, 'What this tab is for'),
+      h('p', null,
+        'You have a single drug, INDF-127. Before dosing humans, animal studies were run to ',
+        'find out what could go wrong. This tab shows two things: (1) the ',
+        h('strong', null, 'safety biomarker panel'),
+        ', a fixed list of analytes (ALT, cTnI, CREA, IL-6, etc.) the clinical team will measure ',
+        'during the FIH trial to detect toxicity early; and (2) the ',
+        h('strong', null, 'GLP study findings'),
+        ' that justify keeping each one in the panel and inform stopping rules.'),
+      h('p', { style: { marginBottom: 0 } },
+        'These are not other compounds. They are the markers monitored alongside INDF-127.')),
+
     h('div', { className: 'stats-row' },
-      h(StatCard, { label: 'Candidates in safety panel', value: overlap.candidates.length, color: 'primary' }),
-      h(StatCard, { label: 'Organ systems monitored', value: overlap.organs.length, color: 'info' }),
-      h(StatCard, { label: h(Term, { term: 'tox_finding', subtle: true }, 'Tox flags (severity ≥ Mild)'),
-        value: flaggedCount, color: 'danger', sub: 'GLP-tied' }),
+      h(StatCard, { label: 'Safety biomarkers in panel', value: overlap.candidates.length, color: 'primary',
+        sub: 'analytes monitored alongside INDF-127' }),
+      h(StatCard, { label: 'Organ systems covered', value: overlap.organs.length, color: 'info' }),
+      h(StatCard, { label: h(Term, { term: 'tox_finding', subtle: true }, 'Tox flags (severity Mild or higher)'),
+        value: flaggedCount, color: 'danger', sub: 'tied to a GLP study' }),
       h(StatCard, { label: h(Term, { term: 'glp', subtle: true }, 'GLP studies ingested'),
         value: studies.filter(function(s) { return s.glp; }).length, color: 'success' })
     ),
@@ -910,9 +963,9 @@ function SafetyPage(props) {
     h('div', { className: 'panel' },
       h('div', { className: 'panel-header' },
         h('span', { className: 'panel-title' },
-          h(Term, { term: 'tox_finding', subtle: true }, 'Tox findings by biomarker × organ')),
+          h(Term, { term: 'tox_finding', subtle: true }, 'Tox findings by biomarker and organ')),
         h('span', { style: { fontSize: 12, color: '#7F8385' } },
-          'Severity from GLP studies — click any non-gray cell for the finding')),
+          'Each cell is the highest severity finding for that biomarker in that organ system. Click any colored cell for the underlying GLP study text.')),
       h('div', { className: 'panel-body' },
         h('div', { ref: chartRef, className: 'chart-box' })
       )
@@ -932,7 +985,7 @@ function SafetyPage(props) {
 // Keynote-demo page. The audience is asked to imagine a computational biologist
 // integrating RNA-seq, proteomics, and metabolomics across a 40-animal NHP cohort.
 // Animal omics is pinned to on-prem storage by IT policy, so the workload routes
-// to where the data already lives — no egress, no data-transfer review.
+// to where the data already lives, no egress, no data-transfer review.
 
 function CIBar(props) {
   // Render a 95% CI segment with a centered point estimate. Domain is 0..1.
@@ -997,7 +1050,7 @@ function FactorHeatmap(props) {
 
 function BootstrapHistogram(props) {
   // Plausible-looking bootstrap distribution centered at the point estimate
-  // with width matching the CI. Pure mock — for the keynote drill-down only.
+  // with width matching the CI. Pure mock, for the keynote drill-down only.
   var ref = useRef(null);
   var c = props.candidate;
   useEffect(function() {
@@ -1060,6 +1113,12 @@ function SweepPage(props) {
   var _pickerOpen = useState(false);
   var pickerOpen = _pickerOpen[0]; var setPickerOpen = _pickerOpen[1];
 
+  // Honor the autoOpenPicker prop so "Run sweep now" from PK/PD lands the
+  // user directly on the cluster picker, not just on this tab.
+  useEffect(function() {
+    if (props.autoOpenPicker && phase === 'config') setPickerOpen(true);
+  }, [props.autoOpenPicker]);
+
   var _progress = useState(0);
   var progress = _progress[0]; var setProgress = _progress[1];
   var _stage = useState(0); // 0 queued · 1 running · 2 succeeded
@@ -1084,7 +1143,7 @@ function SweepPage(props) {
       cohort_id: cohortId, method: params.method, factors: params.factors,
       bootstrap: params.bootstrap, confidence: params.confidence / 100,
       compute_target: job.cluster.id,
-    }).catch(function() { /* non-fatal — demo continues with mock */ });
+    }).catch(function() { /* non-fatal, demo continues with mock */ });
 
     var start = Date.now();
     var iv = setInterval(function() {
@@ -1196,7 +1255,7 @@ function SweepPage(props) {
   function renderRunning() {
     var stages = ['Queued', 'Running on ' + selectedCluster.name.split(' (')[0], 'Aggregating bootstrap', 'Succeeded'];
     // Threshold each chip to a progress band so exactly one is "active"
-    // and earlier ones are "done" — clearer than the previous additive logic.
+    // and earlier ones are "done", clearer than the previous additive logic.
     var thresholds = [0, 15, 50, 100];
     function chipState(i) {
       if (progress >= 100) return i === 3 ? 'done' : 'done';
@@ -1220,8 +1279,8 @@ function SweepPage(props) {
         ),
         h('div', { style: { marginTop: 16, fontSize: 12, color: '#65657B' } },
           isOnPrem
-            ? '✓ Job dispatched on-prem — animal omics never leaves the firewall.'
-            : '⚠ Cloud target — data-transfer review approval assumed.')
+            ? '✓ Job dispatched on-prem, animal omics never leaves the firewall.'
+            : '⚠ Cloud target, data-transfer review approval assumed.')
       )
     );
   }
@@ -1332,7 +1391,7 @@ function SweepPage(props) {
       hideBootstraps: true,
       bootstrapDefault: params.bootstrap,
       description: 'Multi-omics integration is HPC-shaped. Your animal-omics and GLP tox data is restricted ' +
-        'to on-prem storage. On-prem SLURM is recommended — no egress, no data-transfer review, GLP audit chain preserved.',
+        'to on-prem storage. On-prem SLURM is recommended, no egress, no data-transfer review, GLP audit chain preserved.',
       onSubmitted: onPickerSubmitted,
     }),
 
@@ -1340,7 +1399,7 @@ function SweepPage(props) {
       open: !!drawerCand,
       onClose: function() { setDrawerCand(null); },
       width: 560,
-      title: drawerCand ? drawerCand.symbol + ' — translatability detail' : '',
+      title: drawerCand ? drawerCand.symbol + ', translatability detail' : '',
       styles: { body: { padding: '20px 24px' } }
     }, drawerCand ? h('div', null,
       h('div', { className: 'drawer-section' },
@@ -1368,9 +1427,9 @@ function SweepPage(props) {
 
 function PKPDPage(props) {
   var pk = props.pkpd;
-  var sweepRunId = props.sweepRunId; // optional — set when a sweep was completed
+  var sweepRunId = props.sweepRunId; // optional, set when a sweep was completed
 
-  // Live inputs — seeded from MOCK_PKPD, fully editable.
+  // Live inputs, seeded from MOCK_PKPD, fully editable.
   var _inputs = useState({
     species: pk.species,
     animal_bw_kg: pk.animal_bw_kg,
@@ -1390,7 +1449,7 @@ function PKPDPage(props) {
   var inputs = _inputs[0]; var setInputs = _inputs[1];
   function setInput(k, v) { setInputs(Object.assign({}, inputs, (function(o){ o[k]=v; return o; })({}))); }
 
-  // Derived values — recomputed on every input change via the dose math kernel.
+  // Derived values, recomputed on every input change via the dose math kernel.
   var result = useMemo(function() { return window.computeDose(inputs); }, [inputs]);
 
   // Exposure–response chart
@@ -1429,7 +1488,7 @@ function PKPDPage(props) {
   var _cp = useState(false);
   var pickerOpen = _cp[0]; var setPickerOpen = _cp[1];
 
-  // Export modal state — uses the backend .docx endpoint.
+  // Export modal state, uses the backend .docx endpoint.
   var _exportOpen = useState(false);
   var exportOpen = _exportOpen[0]; var setExportOpen = _exportOpen[1];
   var _exporting = useState(false);
@@ -1505,8 +1564,8 @@ function PKPDPage(props) {
             h(Form.Item, { label: h(Term, { term: 'allometric', subtle: true }, 'Allometric exponent') },
               h(Select, { value: inputs.exponent, style: { width: '100%' },
                 onChange: function(v) { setInput('exponent', v); },
-                options: [{ value: 0.67, label: '0.67 — surface area (FDA 2005)' },
-                          { value: 0.75, label: '0.75 — Boxenbaum' }] })),
+                options: [{ value: 0.67, label: '0.67, surface area (FDA 2005)' },
+                          { value: 0.75, label: '0.75, Boxenbaum' }] })),
             h(Form.Item, { label: 'Safety factor' },
               h(InputNumber, { min: 1, max: 100, step: 1, value: inputs.safety_factor, style: { width: '100%' },
                 onChange: function(v) { setInput('safety_factor', v); } })),
@@ -1541,7 +1600,7 @@ function PKPDPage(props) {
   function renderDerived() {
     var fSources = function(formId) {
       return [
-        { kind: 'GLP study', id: inputs.glp_study_id || '—',
+        { kind: 'GLP study', id: inputs.glp_study_id || '-',
           summary: inputs.species + ' ' + (inputs.noael_mg_kg) + ' mg/kg' },
         { kind: 'Math kernel', id: window.DOSE_MATH_KERNEL_VERSION,
           summary: 'Allometric scaling (FDA 2005) + MABEL (EMA 2017)' },
@@ -1612,7 +1671,7 @@ function PKPDPage(props) {
         h('span', { className: 'panel-title' },
           h(Term, { term: 'allometric', subtle: true }, 'Math walkthrough'),
           h('span', { style: { marginLeft: 8, fontSize: 12, color: '#7F8385', fontWeight: 400 } },
-            'Reviewable arithmetic — every step shown with formula and citation'))),
+            'Reviewable arithmetic, every step shown with formula and citation'))),
       h('div', { className: 'panel-body' },
         h('ol', { className: 'math-walkthrough' },
           result.formulas.map(function(f) {
@@ -1633,9 +1692,10 @@ function PKPDPage(props) {
   function renderSweepSeam() {
     if (!sweepRunId) {
       return h('div', { className: 'sweep-seam-empty' },
-        h('span', null, 'No translatability sweep attached. '),
-        h('a', { href: '#', onClick: function(e) { e.preventDefault(); props.onJumpToSweep && props.onJumpToSweep(); } },
-          'Run a sweep to populate bridging evidence →'));
+        h('span', null, 'No translatability sweep attached. The bridging evidence section of the dose justification will be empty. '),
+        h(Button, { size: 'small', type: 'primary',
+          onClick: function() { props.onRunSweep && props.onRunSweep(); } },
+          'Run sweep now'));
     }
     return h('div', { className: 'sweep-seam' },
       h('span', { className: 'sweep-seam-label' }, 'Bridging evidence'),
@@ -1654,13 +1714,13 @@ function PKPDPage(props) {
         value: pk.lead_pd_biomarker, color: 'info' }),
       h(StatCard, { label: h(Term, { term: 'fih', subtle: true }, 'FIH starting dose'),
         value: h(TraceVal, { id: 'fih_dose_stat', value: result.fih_dose_mg, unit: 'mg',
-          formula: 'Lower of MRSD ' + result.mrsd_mg + ' mg and MABEL ' + (result.mabel_dose_mg || '—') + ' mg' }),
+          formula: 'Lower of MRSD ' + result.mrsd_mg + ' mg and MABEL ' + (result.mabel_dose_mg || '-') + ' mg' }),
         sub: result.controlling_method + '-controlled', color: 'primary' }),
       h(StatCard, { label: h(Term, { term: 'noael', subtle: true }, 'NOAEL'),
         value: inputs.noael_mg_kg + ' mg/kg',
         sub: inputs.species + ' · ' + (inputs.glp_study_id || 'GLP'), color: 'danger' }),
       h(StatCard, { label: h(Term, { term: 'exposure_margin', subtle: true }, 'Exposure margin'),
-        value: (result.exposure_margin || '—') + (result.exposure_margin ? '×' : ''),
+        value: (result.exposure_margin || '-') + (result.exposure_margin ? '×' : ''),
         sub: 'vs NOAEL AUC', color: 'success' })
     ),
 
@@ -1705,7 +1765,7 @@ function IndPackagePage(props) {
   var pkg = props.pkg;
   var evidenceState = props.evidenceState || {};
 
-  // Status is derived from attached evidence — the user cannot toggle it.
+  // Status is derived from attached evidence, the user cannot toggle it.
   function statusOf(item) {
     return (window.checklistStatus || function(){ return 'not_started'; })(item, evidenceState);
   }
@@ -1764,6 +1824,22 @@ function IndPackagePage(props) {
   }
 
   return h('div', null,
+    h('div', { className: 'page-explainer' },
+      h('div', { className: 'page-explainer-title' }, 'What this tab is for'),
+      h('p', null,
+        'The ', h(Term, { term: 'ind_package', subtle: true }, h('strong', null, 'IND package')),
+        ' is the dossier the sponsor files with the FDA before any human dosing. ',
+        h(Term, { term: 'cfr_312', subtle: true }, h('strong', null, '21 CFR §312.23')),
+        ' lists all 13 sections it must contain. IND Forge produces five of them ',
+        '(highlighted in purple below). The other eight are owned by CMC, Clinical Development, ',
+        'or Regulatory and shown for context only.'),
+      h('p', { style: { marginBottom: 0 } },
+        'Section status is computed automatically from attached evidence. ',
+        'Run the ', h('strong', null, 'Translatability Sweep'), ' to attach the biomarker plan; ',
+        'export the FIH dose justification on ', h('strong', null, 'PK/PD & FIH Dose'),
+        ' to attach the dose math. When all five in-scope sections are done, click ',
+        h('strong', null, '"Open IND package"'), ' (top right of this panel) to assemble and review.')),
+
     h('div', { className: 'stats-row' },
       h(StatCard, { label: 'Compound', value: pkg.compound, color: 'primary' }),
       h(StatCard, { label: 'Target submission', value: pkg.target_ind_submission, color: 'info',
@@ -1777,8 +1853,10 @@ function IndPackagePage(props) {
     h('div', { className: 'panel' },
       h('div', { className: 'panel-header' },
         h('span', { className: 'panel-title' },
-          h(Term, { term: 'ind_package', subtle: true }, 'IND package'),
-          ' — ', h(Term, { term: 'cfr_312', subtle: true }, '21 CFR §312.23')),
+          h(Term, { term: 'ind_package', subtle: true }, 'Section dossier'),
+          ' (',
+          h(Term, { term: 'cfr_312', subtle: true }, '21 CFR §312.23'),
+          ')'),
         h(Space, null,
           h(Tooltip, { title: h(Term, { term: 'briefing_doc' }, 'Pre-IND briefing doc') },
             h(Button, { onClick: function() { props.onJumpToPKPD && props.onJumpToPKPD(); } },
@@ -1789,7 +1867,7 @@ function IndPackagePage(props) {
       h('div', { className: 'panel-body' },
         h('div', { className: 'checklist-legend' },
           h('span', null, h(Tag, { color: 'green' }, 'In scope · IND Forge'), ' authored here'),
-          h('span', null, h(Tag, null, 'External'), ' authored elsewhere — shown for context')),
+          h('span', null, h(Tag, null, 'External'), ' authored elsewhere, shown for context')),
         h('ul', { className: 'checklist v2' },
           pkg.sections.map(function(s) {
             var status = statusOf(s);
@@ -1816,7 +1894,7 @@ function IndPackagePage(props) {
 // ---------- Compute Cluster Picker (on-prem SLURM showcase) ----------
 //
 // This is the workflow that highlights Domino's new on-prem SLURM capability.
-// The science: species-bridging + bootstrap PK/PD sensitivity sweep — a genuinely
+// The science: species-bridging + bootstrap PK/PD sensitivity sweep, a genuinely
 // parallel HPC workload that benefits from SLURM array jobs. The business case
 // for on-prem: animal omics + GLP tox data is often IP/IT-restricted to stay
 // behind the firewall, so being able to target an on-prem cluster from inside
@@ -1847,7 +1925,7 @@ var COMPUTE_CLUSTERS = [
     partitions: ['default'],
     nodes_available: 16, nodes_total: 32,
     cost_note: '$0.42/node-hr (on-demand)',
-    compliance: ['Public omics only — data-transfer review required for preclinical'],
+    compliance: ['Public omics only, data-transfer review required for preclinical'],
     why_this: 'Use only if on-prem is offline; requires data-transfer approval for animal omics.',
   },
   { id: 'eks-aws',     name: 'AWS EKS (us-east-1)',        type: 'k8s',     location: 'Cloud · AWS',
@@ -1945,7 +2023,7 @@ function ClusterPicker(props) {
       h('div', { style: { marginTop: 16, padding: 14, background: '#F8F7FF', borderRadius: 6, border: '1px solid #E4E0FF' } },
         h('div', { style: { fontSize: 12, color: '#1820A0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Why this matters'),
         h('p', { style: { margin: '6px 0 0', fontSize: 13, color: '#3F4547' } },
-          'Preclinical omics + GLP tox data stays on-prem. The sensitivity sweep runs where the data already lives — no egress, no data-transfer review, and the GLP audit chain is preserved end-to-end. ',
+          'Preclinical omics + GLP tox data stays on-prem. The sensitivity sweep runs where the data already lives, no egress, no data-transfer review, and the GLP audit chain is preserved end-to-end. ',
           'This is the workflow enabled by Domino\u2019s new on-prem SLURM integration.'))
     );
   } else {
@@ -1953,7 +2031,7 @@ function ClusterPicker(props) {
       h(Alert, { type: 'info', showIcon: true, style: { marginBottom: 16 },
         message: 'Choose where to run this workload',
         description: customDescription || ('Your animal-omics and GLP tox data is restricted to on-prem storage. ' +
-          'On-prem SLURM is recommended — no egress, no data-transfer review.')
+          'On-prem SLURM is recommended, no egress, no data-transfer review.')
       }),
 
       h('div', { className: 'cluster-list' },
@@ -2056,10 +2134,16 @@ function App() {
   var activeTab = _tab[0];
   var setActiveTab = _tab[1];
 
-  // Tracks the most recently completed sweep run id — feeds the PK/PD seam.
+  // Tracks the most recently completed sweep run id; feeds the PK/PD seam.
   var _sweep = useState(null);
   var lastSweepId = _sweep[0];
   var setLastSweepId = _sweep[1];
+
+  // When the user clicks "Run sweep now" from the PK/PD seam we navigate to
+  // the Sweep tab AND auto-open the cluster picker so the action lands.
+  var _pending = useState(false);
+  var pendingSweepRun = _pending[0];
+  var setPendingSweepRun = _pending[1];
 
   // IND Package browser modal state
   var _pkgOpen = useState(false);
@@ -2126,7 +2210,7 @@ function App() {
       if (data && data.cohorts && data.cohorts.length) setSweepCohorts(data.cohorts);
     }).catch(function() { /* keep mock */ });
 
-    // Skip the candidates probe on the IND Forge route — Candidates tab
+    // Skip the candidates probe on the IND Forge route, Candidates tab
     // is hidden there, so the 503 is just noise.
     if (routeApp !== 'ind-forge') {
       apiGet('api/candidates').then(function(data) {
@@ -2137,7 +2221,7 @@ function App() {
       }).catch(function() {
         setConnected(false);
         setUseDummy(true);
-        dlog('WARN', 'live /api/candidates unavailable — showing dummy data');
+        dlog('WARN', 'live /api/candidates unavailable, showing dummy data');
       });
     }
   }, []);
@@ -2153,19 +2237,14 @@ function App() {
     }
   }
 
-  // Hide Candidates when on the IND Forge route (it's biomarker-discovery
-  // work, owned by Biomarker Forge). Keep the code in place so the
-  // Biomarker Forge route can still render it.
-  // Tab labels carry hover glossary tips for non-experts.
-  var tabLabel = function(text, term) {
-    return h(Term, { term: term, subtle: true, placement: 'bottom' }, text);
-  };
+  // Plain tab labels. Glossary lives inside each page's header, not on the
+  // tab itself, so clicking a tab never triggers a definition tooltip.
   var allTabs = [
     { key: 'candidates', label: 'Candidates' },
-    { key: 'safety',     label: tabLabel('Safety & Tox', 'glp') },
-    { key: 'sweep',      label: tabLabel('Translatability Sweep', 'translatability') },
-    { key: 'pkpd',       label: tabLabel('PK/PD & FIH Dose', 'pkpd') },
-    { key: 'ind',        label: tabLabel('IND Package', 'ind_package') },
+    { key: 'safety',     label: 'Safety & Tox' },
+    { key: 'sweep',      label: 'Translatability Sweep' },
+    { key: 'pkpd',       label: 'PK/PD & FIH Dose' },
+    { key: 'ind',        label: 'IND Package' },
   ];
   var tabs = routeApp === 'ind-forge'
     ? allTabs.filter(function(t) { return t.key !== 'candidates'; })
@@ -2191,9 +2270,11 @@ function App() {
   var body =
     activeTab === 'candidates' ? h(CandidatesPage, { candidates: candidates }) :
     activeTab === 'safety'     ? h(SafetyPage,     { overlap: overlap, studies: studies }) :
-    activeTab === 'sweep'      ? h(SweepPage,      { cohorts: sweepCohorts, onCompleted: onSweepCompleted }) :
+    activeTab === 'sweep'      ? h(SweepPage,      { cohorts: sweepCohorts, onCompleted: onSweepCompleted,
+                                                     autoOpenPicker: pendingSweepRun }) :
     activeTab === 'pkpd'       ? h(PKPDPage,       { pkpd: pkpd, sweepRunId: lastSweepId,
                                                      onJumpToSweep: function() { setActiveTab('sweep'); },
+                                                     onRunSweep: function() { setPendingSweepRun(true); setActiveTab('sweep'); },
                                                      onExported: function(docId) {
                                                        setEvidenceState(Object.assign({}, evidenceState, {
                                                          fih_dose: { type: 'document', id: docId, summary: 'FIH dose justification (.docx) · FDA 2005 + EMA 2017 + ICH M3(R2)' },

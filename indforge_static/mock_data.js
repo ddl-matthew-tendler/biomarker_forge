@@ -1,4 +1,4 @@
-// INDForge mock data — preclinical biomarker candidates carried from
+// INDForge mock data, preclinical biomarker candidates carried from
 // BiomarkerForge discovery, re-scored on IND-enabling evidence.
 
 var MOCK_CANDIDATES = [
@@ -14,7 +14,7 @@ var MOCK_CANDIDATES = [
   { id: 'BMK-010', symbol: 'CXCL10',  target: 'Th1 chemokine',  assay: 'ELISA',           species_concordance: 0.90, assay_feasibility: 0.85, pd_dynamic_range: 0.78, safety_overlap: 'none',   role: 'efficacy_pd', confidence: 'high',   updated: '2026-04-17' },
 ];
 
-// Tox studies summary (legacy shape — kept for the existing study table)
+// Tox studies summary (legacy shape, kept for the existing study table)
 var MOCK_TOX_STUDIES = [
   { id: 'GLP-001', species: 'Rat',   study_type: '28-day GLP',  noael_mg_kg: 12,  findings: ['Mild ALT elevation @ 30 mg/kg'], glp: true,  status: 'Complete' },
   { id: 'GLP-002', species: 'NHP',   study_type: '28-day GLP',  noael_mg_kg: 6,   findings: ['Transient IL-6 spike @ 20 mg/kg'], glp: true, status: 'Complete' },
@@ -22,7 +22,7 @@ var MOCK_TOX_STUDIES = [
   { id: 'GLP-004', species: 'Rat',   study_type: 'Cardiovascular safety', noael_mg_kg: 15, findings: ['No cTnI change'], glp: true, status: 'Complete' },
 ];
 
-// Full GLP study records — used by the safety heatmap, dose calculator,
+// Full GLP study records, used by the safety heatmap, dose calculator,
 // and audit lineage drawer. Mirrors the server-side _GLP_STUDIES in
 // indforge_app.py.
 var MOCK_GLP_STUDIES = [
@@ -66,7 +66,7 @@ var MOCK_GLP_STUDIES = [
     ] },
 ];
 
-// Severity ordering helper — used by the heatmap to pick the highest
+// Severity ordering helper, used by the heatmap to pick the highest
 // severity per (biomarker × organ).
 var TOX_SEVERITY_ORDER = ['None', 'Minimal', 'Mild', 'Moderate', 'Severe'];
 var TOX_SEVERITY_COLOR = {
@@ -77,7 +77,7 @@ var TOX_SEVERITY_COLOR = {
   Severe:   '#C20A29',
 };
 
-// Biomarker × organ tox-finding lookup — populated from the GLP study
+// Biomarker × organ tox-finding lookup, populated from the GLP study
 // findings above. The Safety & Tox heatmap reads this; clicking a cell
 // opens the underlying finding.
 var MOCK_TOX_FINDINGS = {
@@ -107,16 +107,16 @@ var MOCK_DOSE_JUSTIFICATION_INDF127 = {
     'NOAEL of 6 mg/kg supports a HED of 2.6 mg/kg via FDA 2005 surface-area scaling and ' +
     'an MRSD of 0.26 mg/kg (16 mg total for a 60 kg subject) after a 10× safety factor. ' +
     'Per EMA 2017 §4.4, MABEL is the preferred starting-dose method for receptor-binding ' +
-    'biologics: anchored at 10% receptor occupancy, MABEL yields 0.8 mg total — the controlling ' +
+    'biologics: anchored at 10% receptor occupancy, MABEL yields 0.8 mg total, the controlling ' +
     'value. The proposed FIH starting dose is 0.8 mg, providing a 9.3× exposure margin vs the ' +
     'NHP NOAEL AUC. The biomarker plan is anchored on CXCL9 with safety monitoring of ALT, ' +
     'cTnI, CREA, and IL-6, all qualified through the GLP-002 panel.',
   prompt_version: 'fih-justification-v1.0',
   model_id: 'demo-static',
   citations: [
-    'FDA 2005 — Estimating the Maximum Safe Starting Dose',
-    'EMA 2017 — FIH Risk Identification and Mitigation Guideline',
-    'ICH M3(R2) — Nonclinical Safety Studies',
+    'FDA 2005: Estimating the Maximum Safe Starting Dose',
+    'EMA 2017: FIH Risk Identification and Mitigation Guideline',
+    'ICH M3(R2): Nonclinical Safety Studies',
   ],
 };
 
@@ -124,7 +124,7 @@ var MOCK_DOSE_JUSTIFICATION_INDF127 = {
 var MOCK_TOX_OVERLAP = {
   organs: ['Liver (DILI)', 'Cardiac', 'Renal', 'CRS / Immune'],
   candidates: ['CXCL9', 'ALT', 'IFNG', 'cTnI', 'GZMB', 'CREA', 'IL6', 'CXCL10'],
-  // values 0..1 — overlap risk score
+  // values 0..1, overlap risk score
   matrix: [
     [0.05, 0.02, 0.04, 0.08], // CXCL9
     [0.95, 0.05, 0.10, 0.05], // ALT
@@ -181,7 +181,7 @@ var MOCK_PKPD = {
   auc_per_mg: 510,    // projected NHP AUC at 1 mg starting dose
 };
 
-// Translatability sweep — multi-omics integration mock
+// Translatability sweep, multi-omics integration mock
 var MOCK_SWEEP_COHORTS = [
   { id: 'NHP-2026-A1', label: 'NHP-2026-A1 · 28-day repeat-dose', n_animals: 40, glp_study: 'GLP-002', dose_groups: 4, timepoints: 2, species: 'NHP' },
   { id: 'RAT-2026-B2', label: 'RAT-2026-B2 · 14-day exploratory', n_animals: 24, glp_study: 'GLP-001', dose_groups: 3, timepoints: 2, species: 'Rat' },
@@ -251,10 +251,10 @@ var MOCK_SWEEP_RESULTS = {
   },
 };
 
-// IND dossier checklist — structured to 21 CFR §312.23 section headers.
+// IND dossier checklist, structured to 21 CFR §312.23 section headers.
 // `scope` distinguishes IND Forge's contribution from sections owned by
 // CMC / Clinical / Regulatory teams (shown as 'external' for context).
-// Status is derived from `evidence` — items with no evidence cannot be
+// Status is derived from `evidence`, items with no evidence cannot be
 // marked complete.
 var MOCK_IND_PACKAGE = {
   compound: 'INDF-127',

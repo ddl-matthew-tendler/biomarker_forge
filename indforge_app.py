@@ -1,7 +1,7 @@
 """INDForge - preclinical IND-enabling biomarker package app.
 
 Serves static assets from indforge_static/ and a small set of mock JSON
-endpoints. Live endpoints are stubs — when wired to Domino, they'd read
+endpoints. Live endpoints are stubs, when wired to Domino, they'd read
 from the biomarker-forge-outputs NetApp volume plus tox/PK stores.
 """
 
@@ -149,7 +149,7 @@ def sweep_results(sweep_id: str):
 # The dose math is reviewable arithmetic, not a model. The same formulas
 # run client-side (dose_math.js) so the UI updates live; this server
 # implementation is the canonical reference used for the .docx export
-# audit page. If the two ever diverge, the server wins — that's the
+# audit page. If the two ever diverge, the server wins, that's the
 # trace-of-record.
 #
 # Citations baked in:
@@ -317,9 +317,9 @@ def compute_dose(inp: DoseInputs) -> Dict[str, Any]:
         "formulas": formulas,
         "rationale": rationale,
         "citations": [
-            "FDA 2005 — Estimating the Maximum Safe Starting Dose",
-            "EMA 2017 — FIH Risk Identification and Mitigation Guideline",
-            "ICH M3(R2) — Nonclinical Safety Studies",
+            "FDA 2005, Estimating the Maximum Safe Starting Dose",
+            "EMA 2017, FIH Risk Identification and Mitigation Guideline",
+            "ICH M3(R2), Nonclinical Safety Studies",
         ],
     }
 
@@ -429,7 +429,7 @@ _DUMMY_PARAGRAPH_INDF127 = (
     "an MRSD of 0.26 mg/kg (16 mg total for a 60 kg subject) after a 10× safety factor. "
     "Per EMA 2017 §4.4, MABEL is the preferred starting-dose method for receptor-binding "
     "biologics: anchored at 10% receptor occupancy with the program's affinity, distribution, "
-    "and molecular weight, MABEL yields 0.8 mg total — the controlling value. The proposed "
+    "and molecular weight, MABEL yields 0.8 mg total, the controlling value. The proposed "
     "FIH starting dose is 0.8 mg, providing a 9.3× exposure margin vs the NHP NOAEL AUC "
     "(3800 ng·h/mL). The biomarker plan is anchored on CXCL9 (efficacy/PD) with safety "
     "monitoring of ALT, cTnI, CREA, and IL-6, all qualified through the GLP-002 panel."
@@ -560,7 +560,7 @@ def dose_justification_export(document_id: str):
         para.add_run(v)
 
     # 1. Cover
-    h1(f"FIH Dose Justification — {record['compound_id']}")
+    h1(f"FIH Dose Justification, {record['compound_id']}")
     p("Pre-IND briefing-book extract · Pharmacology and Toxicology section")
     kv("Document ID", record["document_id"])
     kv("Compound", record["compound_id"])
@@ -569,8 +569,8 @@ def dose_justification_export(document_id: str):
     kv("Drafted by", record["user_id"])
     kv("Prompt version", record["prompt_version"])
     kv("LLM model", record["model_id"])
-    kv("LLM live call", "yes" if record["live"] else "no (demo mode — pre-authored copy)")
-    kv("Translatability sweep", record.get("sweep_id") or "—")
+    kv("LLM live call", "yes" if record["live"] else "no (demo mode, pre-authored copy)")
+    kv("Translatability sweep", record.get("sweep_id") or "-")
 
     # 2. Executive summary
     h2("Executive summary")
@@ -613,7 +613,7 @@ def dose_justification_export(document_id: str):
     p(dr["rationale"])
 
     # 7. Sensitivity envelope (translatability sweep)
-    h2("Sensitivity envelope — bridging evidence")
+    h2("Sensitivity envelope, bridging evidence")
     if record.get("sweep_id"):
         p(f"Translatability sweep run {record['sweep_id']} provides per-candidate "
           "translatability scores with 95% bootstrap confidence intervals across "
@@ -625,14 +625,14 @@ def dose_justification_export(document_id: str):
 
     # 8. Safety biomarker panel
     h2("Safety biomarker panel")
-    p("ALT, cTnI, CREA, IL-6 — qualified through GLP-002 (NHP 28-day) panel. "
+    p("ALT, cTnI, CREA, IL-6, qualified through GLP-002 (NHP 28-day) panel. "
       "Stopping rules at protocol-defined thresholds.")
 
     # 9. Audit chain
     h2("Audit chain")
     kv("Snapshot ID", record["snapshot_id"])
     kv("Math kernel", dr["kernel_version"])
-    kv("Sweep run", record.get("sweep_id") or "—")
+    kv("Sweep run", record.get("sweep_id") or "-")
     kv("Drafted by", record["user_id"])
     kv("Drafted at", record["drafted_at"])
     kv("Prompt version", record["prompt_version"])
@@ -645,8 +645,8 @@ def dose_justification_export(document_id: str):
     h2("Citations")
     for c in dr["citations"]:
         p("• " + c)
-    p("• ICH S9 — applicable to oncology programs only.")
-    p("• 21 CFR §312.23 — IND content and format.")
+    p("• ICH S9, applicable to oncology programs only.")
+    p("• 21 CFR §312.23, IND content and format.")
 
     doc.save(buf)
     buf.seek(0)
@@ -718,8 +718,8 @@ def _assemble_ind_package(compound_id: str, sweep_id: Optional[str],
          "body": (
              f"Pivotal repeat-dose toxicology study: GLP-002 (NHP, 28-day, NOAEL "
              f"{inp_obj.noael_mg_kg} mg/kg). Supporting studies: GLP-001 (rat 28-day, "
-             "NOAEL 12 mg/kg), GLP-003 (genotoxicity panel — Ames + in vivo MN, both negative), "
-             "GLP-004 (cardiovascular safety pharmacology — no QTc prolongation, no cTnI elevation). "
+             "NOAEL 12 mg/kg), GLP-003 (genotoxicity panel, Ames + in vivo MN, both negative), "
+             "GLP-004 (cardiovascular safety pharmacology, no QTc prolongation, no cTnI elevation). "
              f"Allometric scaling per FDA 2005 (BW^{inp_obj.exponent}). MABEL anchored at "
              f"{int(inp_obj.ro_threshold * 100)}% receptor occupancy per EMA 2017 §4.4. "
              "Safety biomarker panel: ALT (DILI), cTnI (cardiac), CREA (renal), IL-6 (CRS / immune)."
@@ -745,7 +745,7 @@ def _assemble_ind_package(compound_id: str, sweep_id: Optional[str],
              f"40-animal NHP cohort (GLP-002). Translatability scores with 95% bootstrap confidence "
              f"intervals: CXCL9 0.87 [0.81, 0.92] (PD anchor), IL-6 0.71 [0.62, 0.79] (safety/PD), "
              f"ALT 0.93 [0.89, 0.96] (DILI safety), cTnI 0.88 [0.83, 0.92] (cardiac safety). "
-             "Compute on Cambridge HPC (on-prem SLURM) — no data egress, GLP audit chain preserved."
+             "Compute on Cambridge HPC (on-prem SLURM), no data egress, GLP audit chain preserved."
          ) if sweep_id else "No sweep attached. Run the Translatability Sweep tab to populate this section."},
         {"key": "pre_ind", "cfr": "Pre-IND meeting (Type B)",
          "title": "Pre-IND briefing-book paragraph (Pharm/Tox)",
@@ -799,12 +799,12 @@ _IND_DOWNSTREAM_FLOW = [
      "duration": "Day 0 of 30-day clock",
      "detail": "Vault publishes the assembled eCTD package to FDA ESG. The 30-day IND review clock begins. "
                "FDA may impose a clinical hold, allow the IND to proceed, or request information."},
-    {"step": 4, "label": "FDA review (CDER) — 30-day clock",
+    {"step": 4, "label": "FDA review (CDER), 30-day clock",
      "owner": "FDA reviewer",
      "duration": "30 days",
      "detail": "Pharm/Tox reviewer audits the dose justification, GLP study integration, and safety panel. "
                "Sponsor responds to information requests via Vault → ESG."},
-    {"step": 5, "label": "IND active — first patient dosed",
+    {"step": 5, "label": "IND active, first patient dosed",
      "owner": "Clinical operations",
      "duration": "Day 30+",
      "detail": "If no clinical hold, the IND is active. Sponsor activates Phase 1 sites, screens patients, "
@@ -857,19 +857,19 @@ def ind_package_export(package_id: str):
     def kv(k, v):
         p = doc.add_paragraph(); r = p.add_run(f"{k}: "); r.bold = True; p.add_run(v)
 
-    h1(f"IND Package — {rec['compound_id']}")
+    h1(f"IND Package, {rec['compound_id']}")
     doc.add_paragraph(f"Indication: {rec['indication']} · IND target: {rec['ind_target']} · 21 CFR §312.23")
     kv("Package ID", rec["package_id"])
     kv("Snapshot ID", rec["snapshot_id"])
     kv("Math kernel", rec["kernel_version"])
     kv("Assembled at", rec["assembled_at"])
     kv("Assembled by", rec["user"])
-    kv("Translatability sweep", rec.get("sweep_id") or "—")
+    kv("Translatability sweep", rec.get("sweep_id") or "-")
 
     h2("Section manifest")
     for s in rec["sections"]:
         owner_tag = "[in scope · IND Forge]" if s["scope"] == "in_scope" else "[external · " + s["owner"] + "]"
-        doc.add_paragraph(f"{s['cfr']} · {s['title']} {owner_tag} — status: {s['status']}", style="List Bullet")
+        doc.add_paragraph(f"{s['cfr']} · {s['title']} {owner_tag}, status: {s['status']}", style="List Bullet")
 
     for s in rec["sections"]:
         if s["scope"] != "in_scope":
@@ -877,7 +877,7 @@ def ind_package_export(package_id: str):
         h2(f"{s['cfr']} · {s['title']}")
         doc.add_paragraph(s["body"])
 
-    h2("Downstream workflow — what happens after Vault RIM lift")
+    h2("Downstream workflow, what happens after Vault RIM lift")
     for step in rec["downstream_workflow"]:
         h3(f"Step {step['step']}: {step['label']}")
         kv("Owner", step["owner"])
@@ -885,13 +885,13 @@ def ind_package_export(package_id: str):
         doc.add_paragraph(step["detail"])
 
     h2("Citations")
-    for c in ("FDA 2005 — Estimating the Maximum Safe Starting Dose",
-              "EMA 2017 — FIH Risk Identification and Mitigation Guideline",
-              "ICH M3(R2) — Nonclinical Safety Studies",
-              "ICH S9 — Nonclinical Evaluation for Anticancer Pharmaceuticals (oncology only)",
-              "21 CFR §312.23 — IND content and format",
-              "21 CFR Part 11 — Electronic records / signatures",
-              "21 CFR Part 58 — Good Laboratory Practice"):
+    for c in ("FDA 2005, Estimating the Maximum Safe Starting Dose",
+              "EMA 2017, FIH Risk Identification and Mitigation Guideline",
+              "ICH M3(R2), Nonclinical Safety Studies",
+              "ICH S9, Nonclinical Evaluation for Anticancer Pharmaceuticals (oncology only)",
+              "21 CFR §312.23, IND content and format",
+              "21 CFR Part 11, Electronic records / signatures",
+              "21 CFR Part 58, Good Laboratory Practice"):
         doc.add_paragraph("• " + c)
 
     doc.save(buf); buf.seek(0)

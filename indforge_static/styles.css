@@ -208,27 +208,42 @@ html, body { margin: 0; padding: 0; font-family: 'Inter', 'Lato', 'Helvetica Neu
 .pkg-flow-step-meta { font-size: 12px; color: #65657B; margin-top: 2px; }
 .pkg-flow-step-detail { font-size: 13px; color: #3F4547; margin-top: 6px; line-height: 1.5; }
 
-/* Glossary terms — dotted-underline + small ? affordance */
-.glossary-term { border-bottom: 1px dotted #C9C5F2; cursor: help; padding: 0 1px;
-  transition: border-color 0.12s, background 0.12s; }
-.glossary-term:hover { border-bottom-color: #543FDE; background: #F5F3FF; }
-.glossary-term.subtle { border-bottom-color: #E0E0E0; }
-.glossary-q { display: inline-block; margin-left: 3px; font-size: 9px; line-height: 12px; min-width: 12px;
-  height: 12px; text-align: center; color: #8F8FA3; border: 1px solid #C9C5F2; border-radius: 50%;
-  vertical-align: middle; transform: translateY(-1px); font-weight: 700; }
-.glossary-term:hover .glossary-q { color: #543FDE; border-color: #543FDE; }
+/* Glossary: plain text + a small (i) icon. Only the icon triggers the tooltip
+   so users who know the term can read the page without popovers. */
+.glossary-term-wrap { display: inline; }
+.glossary-i { display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; margin-left: 4px; vertical-align: middle; transform: translateY(-1px);
+  font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 11px; font-weight: 700;
+  line-height: 1; color: #8F8FA3; border: 1px solid #C9C5F2; border-radius: 50%;
+  background: #FFFFFF; cursor: help; transition: color 0.12s, border-color 0.12s, background 0.12s; }
+.glossary-i:hover, .glossary-i:focus { color: #FFFFFF; border-color: #543FDE; background: #543FDE; outline: none; }
+.glossary-term-wrap.subtle .glossary-i { border-color: #E0E0E0; }
 
-/* Program context strip */
-.program-context { background: linear-gradient(180deg, #F5F3FF 0%, #FAFAFA 100%);
-  border: 1px solid #C9C5F2; border-radius: 8px; padding: 10px 16px; margin-bottom: 18px; }
-.pc-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: #3F4547; }
-.pc-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #1820A0;
-  font-weight: 700; margin-right: 4px; }
-.pc-strong { font-weight: 700; color: #543FDE; }
-.pc-arrow { color: #8F8FA3; font-weight: 600; }
-.pc-spacer { flex: 1; }
-.pc-meta { font-size: 12px; color: #65657B; }
-.pc-meta:not(:last-child)::after { content: '·'; margin-left: 8px; color: #C9C5F2; }
+/* Page-level explainer card, sits above the stats row */
+.page-explainer { background: #FAFAFA; border: 1px solid #DBE4E8; border-left: 3px solid #543FDE;
+  border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; }
+.page-explainer-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+  color: #1820A0; font-weight: 700; margin-bottom: 6px; }
+.page-explainer p { margin: 0 0 8px 0; font-size: 13px; line-height: 1.55; color: #3F4547; }
+.page-explainer p:last-child { margin-bottom: 0; }
+
+/* Program context, an informational status card. Not navigation. */
+.program-context { background: #FFFFFF; border: 1px solid #DBE4E8; border-left: 3px solid #543FDE;
+  border-radius: 6px; padding: 12px 16px; margin-bottom: 18px; }
+.pc-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: #3F4547; }
+.pc-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #1820A0;
+  font-weight: 700; }
+.pc-kvs { display: flex; flex-wrap: wrap; gap: 6px 18px; flex: 1; }
+.pc-kv { display: inline-flex; align-items: center; gap: 5px; }
+.pc-k { color: #7F8385; font-size: 12px; }
+.pc-v { color: #3F4547; font-weight: 600; font-size: 13px; }
+.pc-explain { background: transparent; border: 1px solid #C9C5F2; color: #1820A0; font-size: 12px;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+.pc-explain:hover { background: #F5F3FF; }
+.pc-explain-body { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #E0E0E0;
+  font-size: 13px; line-height: 1.55; color: #3F4547; }
+.pc-explain-body p { margin: 0 0 8px 0; }
+.pc-explain-body p:last-child { margin-bottom: 0; }
 
 /* TraceVal — numeric token tied to audit lineage */
 .trace-val { display: inline-flex; align-items: baseline; gap: 3px; cursor: pointer;
